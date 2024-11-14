@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const sequelize = require("./config/database");
+const Routes = require("./routes/routes");
 const User = require("./models/User/users");
 
 dotenv.config();
@@ -16,9 +17,11 @@ app.use(
 
 app.use(express.json());
 
+app.use("/api", Routes);
+
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await sequelize.sync();
+    // await User.sync({ alter: true });
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

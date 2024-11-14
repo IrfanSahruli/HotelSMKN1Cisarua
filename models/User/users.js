@@ -22,11 +22,8 @@ const User = db.define("user", {
     },
     role: {
         type: DataTypes.ENUM,
-        values: ["user", "kasir", "admin", "super admin", "resepsionis"]
+        values: ["user", "kasir", "admin", "super_admin", "resepsionis"]
     },
-    alamat: {
-        type: DataTypes.STRING
-    }
 }, {
     freezeTableName: true
 });
