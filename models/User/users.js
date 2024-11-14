@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcryptjs");
-const db = require("../../config/database");
+const sequelize = require("../../config/database");
 
-const User = db.define("user", {
+const User = sequelize.define("user", {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -22,7 +22,7 @@ const User = db.define("user", {
     },
     role: {
         type: DataTypes.ENUM,
-        values: ["user", "kasir", "admin", "super_admin", "resepsionis"]
+        values: ["user", "kasir", "admin", "super admin", "resepsionis"]
     },
 }, {
     freezeTableName: true

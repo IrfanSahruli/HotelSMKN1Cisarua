@@ -31,10 +31,6 @@ const Register = async (req, res) => {
     }
 };
 
-const getKasir = async (req, res) => {
-
-}
-
 const Login = async (req, res) => {
     const {
         username, password
@@ -76,8 +72,18 @@ const LogOut = async (req, res) => {
     }
 }
 
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.findAll();
+        res.status(200).json(users);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
     Register,
     Login,
-    LogOut
+    LogOut,
+    getAllUsers
 };

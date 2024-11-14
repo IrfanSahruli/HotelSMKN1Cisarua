@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const sequelize = require("./config/database");
 const Routes = require("./routes/routes");
 const User = require("./models/User/users");
@@ -16,6 +18,9 @@ app.use(
 );
 
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api", Routes);
 
