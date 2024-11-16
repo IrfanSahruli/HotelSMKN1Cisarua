@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const sequelize = require("./config/database");
 const Routes = require("./routes/routes");
 const User = require("./models/User/users");
+const TransaksiLaundry = require("./models/Laundry/Transaksi/transaksiLaundry");
 
 dotenv.config();
 const app = express();
@@ -26,7 +27,7 @@ app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await User.sync({ alter: true });
+    // await TransaksiLaundry.sync({ alter: true });
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

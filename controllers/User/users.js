@@ -49,7 +49,7 @@ const Login = async (req, res) => {
 
         // Generate JWT without expiration
         const token = jwt.sign(
-            { id: user.id, role: user.role },
+            { id: user.id, role: user.role, username: user.username },
             process.env.SECRET_KEY // No expiration time
         );
 
