@@ -5,19 +5,20 @@ const moment = require("moment");
 // Create TransaksiLaundry function
 const createTransaksiLaundry = async (req, res) => {
     try {
-        const user = req.user; // Memastikan req.user terisi dengan data pengguna yang sudah login
+        const user = req.user; // Pastikan req.user berisi data pengguna yang login
 
-        // Cek apakah user yang terkait ada di tabel User
+        // Periksa apakah user ada di tabel User
         const existingUser = await User.findByPk(user.id);
         if (!existingUser) {
             return res.status(404).json({ message: "User tidak ditemukan" });
         }
 
+        // Buat transaksi laundry baru
         const newLaundryTransaction = await TransaksiLaundry.create({
-            date: moment().format("YYYY-MM-DD"), // Tanggal hari ini
+            date: new Date(), // Tanggal otomatis (sesuai DATEONLY)
             timeIn: moment().format("HH:mm:ss"), // Waktu saat ini
             customer: req.body.customer,
-            checkByIn: user.id, // Gunakan user.id yang valid
+            checkByIn: user.id,
             itemType: req.body.itemType,
             pcs: req.body.pcs,
             color_description: req.body.color_description,
@@ -32,12 +33,12 @@ const createTransaksiLaundry = async (req, res) => {
         });
 
         res.status(201).json({
-            message: "Transaksi laundry created successfully",
+            message: "Transaksi laundry berhasil dibuat",
             data: newLaundryTransaction
         });
     } catch (error) {
         res.status(500).json({
-            message: "Error creating transaksi laundry",
+            message: "Gagal membuat transaksi laundry",
             error: error.message
         });
     }
@@ -47,43 +48,61 @@ const createTransaksiLaundry = async (req, res) => {
 const updateTransaksiLaundryStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = req.user; // Logged-in user who is updating the transaction
+        const user = req.user; // Data pengguna yang login
 
         const laundryTransaction = await TransaksiLaundry.findByPk(id);
 
         if (!laundryTransaction) {
             return res.status(404).json({
-                message: "Transaksi laundry not found"
+                message: "Transaksi laundry tidak ditemukan"
             });
         }
 
         const updatedData = { ...req.body };
 
-        if (req.body.status === "diambil") {
-            updatedData.checkByOut = user.id; // Set the logged-in user's ID as checkByOut
-            updatedData.timeOut = moment().format("HH:mm:ss"); // Set the current time as timeOut
+        // Perbarui status dan waktu keluar jika status menjadi 'diambil'
+        if (req.body.status === "selesai") {
+            updatedData.checkByOut = user.id; // Pengguna yang login
+            updatedData.timeOut = moment().format("HH:mm:ss"); // Waktu saat ini
         }
 
-        // Update the status and any other provided fields
+        // Perbarui transaksi laundry
         await laundryTransaction.update(updatedData);
 
         res.status(200).json({
-            message: "Transaksi laundry updated successfully",
+            message: "Transaksi laundry berhasil diperbarui",
             data: laundryTransaction
         });
     } catch (error) {
         res.status(500).json({
-            message: "Error updating transaksi laundry",
+            message: "Gagal memperbarui transaksi laundry",
             error: error.message
         });
     }
 };
 
-const getInProcessTransaksiLaundry = async (req, res) => {
+const getAllTransaksiLaundry = async (req, res) => {
     try {
-        // Ambil semua transaksi laundry dengan status 'selesai'
-        const inProcessTransaksi = await TransaksiLaundry.findAll({
-            where: { status: "proses" }, // Hanya transaksi dengan status selesai
+        const transaksiLaundry = await TransaksiLaundry.findAll();
+        res.status(200).json({
+            message: "Berhasil mengambil semua data transaksi laundry",
+            data: transaksiLaundry
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Gagal mengambil semua data transaksi laundry",
+            error: error.message
+        });
+    }
+}
+
+const getTransaksiLaundryByStatus = async (req, res) => {
+    const { status } = req.params; // Ambil status dari parameter URL
+
+    try {
+        // Ambil semua transaksi laundry dengan status tertentu
+        const transaksiLaundry = await TransaksiLaundry.findAll({
+            where: { status }, // Filter berdasarkan status
             include: [
                 {
                     model: User,
@@ -99,63 +118,27 @@ const getInProcessTransaksiLaundry = async (req, res) => {
         });
 
         // Map transaksi untuk menyertakan username checkByIn dan checkByOut
-        const result = inProcessTransaksi.map(transaction => {
-            return {
-                ...transaction.toJSON(),
-                checkByIn: transaction.checkByInUser ? transaction.checkByInUser.username : null,
-                checkByOut: transaction.checkByOutUser ? transaction.checkByOutUser.username : null
-            };
-        });
+        const result = transaksiLaundry.map(transaction => ({
+            ...transaction.toJSON(),
+            checkByIn: transaction.checkByInUser ? transaction.checkByInUser.username : null,
+            checkByOut: transaction.checkByOutUser ? transaction.checkByOutUser.username : null
+        }));
+
+        // Jika tidak ada data dengan status tertentu
+        if (result.length === 0) {
+            return res.status(404).json({
+                message: `Tidak ada transaksi laundry dengan status '${status}'`
+            });
+        }
 
         res.status(200).json({
-            message: "Sukses mengambil data transaksi laundry selesai",
+            message: `Sukses mengambil data transaksi laundry dengan status '${status}'`,
             data: result
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            message: "Gagal mengambil data transaksi laundry selesai",
-            error: error.message
-        });
-    }
-};
-
-const getCompletedTransaksiLaundry = async (req, res) => {
-    try {
-        // Ambil semua transaksi laundry dengan status 'selesai'
-        const completedTransaksi = await TransaksiLaundry.findAll({
-            where: { status: "selesai" }, // Hanya transaksi dengan status selesai
-            include: [
-                {
-                    model: User,
-                    as: 'checkByInUser', // Alias untuk checkByIn
-                    attributes: ['username'], // Hanya ambil username
-                },
-                {
-                    model: User,
-                    as: 'checkByOutUser', // Alias untuk checkByOut
-                    attributes: ['username'], // Hanya ambil username
-                }
-            ]
-        });
-
-        // Map transaksi untuk menyertakan username checkByIn dan checkByOut
-        const result = completedTransaksi.map(transaction => {
-            return {
-                ...transaction.toJSON(),
-                checkByIn: transaction.checkByInUser ? transaction.checkByInUser.username : null,
-                checkByOut: transaction.checkByOutUser ? transaction.checkByOutUser.username : null
-            };
-        });
-
-        res.status(200).json({
-            message: "Sukses mengambil data transaksi laundry selesai",
-            data: result
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            message: "Gagal mengambil data transaksi laundry selesai",
+            message: `Gagal mengambil data transaksi laundry dengan status '${status}'`,
             error: error.message
         });
     }
@@ -164,6 +147,6 @@ const getCompletedTransaksiLaundry = async (req, res) => {
 module.exports = {
     createTransaksiLaundry,
     updateTransaksiLaundryStatus,
-    getInProcessTransaksiLaundry,
-    getCompletedTransaksiLaundry
+    getAllTransaksiLaundry,
+    getTransaksiLaundryByStatus
 };

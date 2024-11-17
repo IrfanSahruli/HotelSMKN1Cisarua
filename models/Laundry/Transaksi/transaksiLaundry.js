@@ -9,67 +9,85 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         primaryKey: true
     },
     date: {
-        type: DataTypes.STRING
+        type: DataTypes.DATEONLY,
+        allowNull: true
     },
     customer: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     timeIn: {
-        type: DataTypes.TIME
+        type: DataTypes.TIME,
+        allowNull: true
     },
     checkByIn: {
         type: DataTypes.INTEGER,
+        allowNull: true,
         references: {
             model: User, // Tabel user sebagai referensi
             key: "id"
         }
     },
     itemType: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     pcs: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     color_description: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     brand: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     care_instruction: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     remarks: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     personInCharge: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     supplyUsed: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     },
     checkByOut: {
         type: DataTypes.INTEGER,
+        allowNull: true,
         references: {
             model: User,
             key: "id"
         }
     },
     timeOut: {
-        type: DataTypes.TIME
+        type: DataTypes.TIME,
+        allowNull: true
     },
     weight: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     harga: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     status: {
         type: DataTypes.ENUM,
-        values: ["proses", "selesai"]
+        values: ["proses", "selesai"],
+        allowNull: true
     }
 }, {
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps: true
 });
 
 User.hasMany(TransaksiLaundry, { foreignKey: "checkByIn", as: 'checkByInUser' });

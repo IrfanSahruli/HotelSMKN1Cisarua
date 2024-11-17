@@ -1,37 +1,37 @@
 const { DataTypes } = require("sequelize");
-const bcrypt = require("bcryptjs");
-const sequelize = require("../../config/database");
+const sequelize = require("../../../config/database");
 
-const User = sequelize.define("user", {
+const Produk = sequelize.define("produk", {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    username: {
+    judul_produk: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    password: {
+    foto_produk: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    email: {
-        type: DataTypes.STRING,
+    harga: {
+        type: DataTypes.INTEGER,
         allowNull: true
     },
-    no_hp: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    role: {
+    kategori_produk: {
         type: DataTypes.ENUM,
-        values: ["user", "kasir", "admin", "super admin", "resepsionis"],
+        values: ["makanan", "minuman"],
         allowNull: true
     },
+    sub_kategori_produk: {
+        type: DataTypes.STRING,
+        allowNull: true
+    }
 }, {
     freezeTableName: true,
     timestamps: true
 });
 
-module.exports = User;
+
+module.exports = Produk;
