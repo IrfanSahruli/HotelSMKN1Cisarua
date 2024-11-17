@@ -9,7 +9,7 @@ const protect = require("../../middlewares/auth");
 
 const router = express.Router();
 
-router.post("/register", protect(["super admin"]), Register);
+router.post("/register", protect(["resepsionis", "admin"]), Register);
 router.post("/registeruser", Register);
 router.post("/login", Login);
 router.get("/getusers", getAllUsers)

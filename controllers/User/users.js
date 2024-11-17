@@ -7,11 +7,19 @@ const Register = async (req, res) => {
     const { username, password, email, no_hp, role } = req.body;
 
     try {
-        const existingUser = await User.findOne({ where: { username } });
-
-        // Check if username is already taken
-        if (existingUser) {
+        const existingUsername = await User.findOne({ where: { username } });
+        if (existingUsername) {
             return res.status(409).json({ message: "Username sudah digunakan" });
+        }
+
+        const existingEmail = await User.findOne({ where: { email } });
+        if (existingEmail) {
+            return res.status(409).json({ message: "email sudah digunakan" });
+        }
+
+        const existingNo_hp = await User.findOne({ where: { no_hp } });
+        if (existingNo_hp) {
+            return res.status(409).json({ message: "no_hp sudah digunakan" });
         }
 
         const salt = await bcrypt.genSalt(10);
