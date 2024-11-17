@@ -10,6 +10,7 @@ const User = sequelize.define("user", {
     },
     username: {
         type: DataTypes.STRING,
+<<<<<<< HEAD
         allowNull : false
     },
     password: {
@@ -22,16 +23,28 @@ const User = sequelize.define("user", {
     },
     no_hp: {
         type: DataTypes.STRING,
-         allowNull : false
+        allowNull: true
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    no_hp: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     role: {
         type: DataTypes.ENUM,
         values: ["user", "kasir", "admin", "super admin", "resepsionis"],
          allowNull : false
     },
-}, {
+},{
     freezeTableName: true,
-    timestamps : true
+    timestamps: true
 });
 
 module.exports = User;

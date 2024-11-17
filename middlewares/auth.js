@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-protect = (roles = []) => {
+const protect = (roles = []) => {
     return (req, res, next) => {
-        const token = req.cookies.token;
+        const token = req.cookies.token || req.headers.authorization?.split(" ")[1]; // Mengambil token dari cookie atau header
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'Login dulu guys' });
@@ -11,7 +11,7 @@ protect = (roles = []) => {
 
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
-            req.user = decoded;
+            req.user = decoded; // Simpan data user yang sudah didekodekan
 
             if (roles.length && !roles.includes(req.user.role)) {
                 return res.status(403).json({ success: false, message: 'Forbidden' });

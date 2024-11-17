@@ -3,14 +3,10 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 const sequelize = require("./config/database");
 const Routes = require("./routes/routes");
 const User = require("./models/User/users");
-const CheckinOut = require("./models/room/inOut");
-const Reservasi = require("./models/room/reservasi");
-const Other = require("./models/room/other");
-const Remarks = require("./models/room/remarks");
-const Room = require("./models/room/room");
 
 dotenv.config();
 const app = express();
@@ -27,11 +23,14 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Middleware untuk melayani file statis di folder uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await sequelize.sync({alter : true});
+    // await User.sync({ alter: true });
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {
