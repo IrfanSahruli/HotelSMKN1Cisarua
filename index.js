@@ -32,7 +32,7 @@ app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await Produk.sync();
+    // await sequelize.sync();
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

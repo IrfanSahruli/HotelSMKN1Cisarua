@@ -144,9 +144,38 @@ const getTransaksiLaundryByStatus = async (req, res) => {
     }
 };
 
+const deleteTransaksiLaundry = async (req, res) => {
+    try {
+        const { id } = req.params; // Ambil id dari parameter URL
+
+        // Cari transaksi laundry berdasarkan ID
+        const laundryTransaction = await TransaksiLaundry.findByPk(id);
+
+        // Jika transaksi tidak ditemukan
+        if (!laundryTransaction) {
+            return res.status(404).json({
+                message: `Transaksi laundry dengan id ${id} tidak ditemukan`
+            });
+        }
+
+        // Hapus transaksi laundry
+        await laundryTransaction.destroy();
+
+        res.status(200).json({
+            message: `Berhasil menghapus transaksi laundry dengan id ${id}`
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: `Gagal menghapus transaksi laundry dengan id ${id}`,
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createTransaksiLaundry,
     updateTransaksiLaundryStatus,
     getAllTransaksiLaundry,
-    getTransaksiLaundryByStatus
+    getTransaksiLaundryByStatus,
+    deleteTransaksiLaundry
 };

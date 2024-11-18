@@ -131,11 +131,19 @@ const updateUserById = async (req, res) => {
             });
         }
 
+        let hashedPassword = user.password; // Default gunakan password lama
+
+        // Jika password baru diberikan, hash password tersebut
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
+
         // Update user
         await User.update(
             {
                 username: username,
-                password: password,
+                password: hashedPassword,
                 email: email,
                 no_hp: no_hp,
                 role: role
