@@ -167,11 +167,11 @@ const updateUserById = async (req, res) => {
 
 // Fungsi Delete User
 const deleteUser = async (req, res) => {
-    const userId = req.params.id; // Ambil ID dari URL
+    const { id } = req.params; // Ambil ID dari URL
 
     try {
         // Cari user berdasarkan ID
-        const user = await User.findByPk(userId);
+        const user = await User.findByPk(id);
 
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });

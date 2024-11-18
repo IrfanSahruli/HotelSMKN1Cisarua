@@ -12,18 +12,17 @@ const storage = multer.diskStorage({
 });
 
 // Filter file untuk hanya menerima gambar
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
-        cb(null, true);
-    } else {
-        cb(new Error("File harus berupa gambar"), false);
-    }
-};
+// const fileFilter = (req, file, cb) => {
+//     if (file.mimetype.startsWith("image/")) {
+//         cb(null, true);
+//     } else {
+//         cb(new Error("File harus berupa gambar"), false);
+//     }
+// };
 
 // Middleware Multer
 const upload = multer({
     storage: storage,
-    fileFilter: fileFilter,
     limits: { fileSize: 2 * 1024 * 1024 } // Maksimal 2MB
 });
 

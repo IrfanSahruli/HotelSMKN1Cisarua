@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 // Middleware untuk melayani file statis di folder uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
