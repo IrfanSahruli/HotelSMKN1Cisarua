@@ -32,15 +32,15 @@ const reservasiHotel = async (req, res) => {
         const resepsionis = await User.findByPk(id);
         const namaResepsionis = resepsionis.username;
 
-        const tanggalIn = moment(checkin, "DD-MM-YYYY").format('YYYY-MM-DD');
-        const tanggalOut = moment(checkout, "DD-MM-YYYY").format('YYYY-MM-DD');
+        // const tanggalIn = moment(checkin, "HH-MM-TTTT").format('TTTT-MM-HH');
+        // const tanggalOut = moment(checkout, "HH-MM-TTTT").format('TTTT-MM-HH');
 
         const reservasi = await Reservasi.create({
             userId: id,
             bookedBy: namaResepsionis,
             name,
-            checkin: tanggalIn,
-            checkout: tanggalOut,
+            checkin,//: tanggalIn,
+            checkout,//: tanggalOut,
             roomNo,
             roomType,
             email,
@@ -65,8 +65,8 @@ const reservasiHotel = async (req, res) => {
         }
 
         const harga_permalam = noRoom.harga;
-        const jamIn = new Date(tanggalIn);
-        const jamOut = new Date(tanggalOut);
+        const jamIn = new Date(checkin);
+        const jamOut = new Date(checkout);
         const totalMalam = Math.ceil((jamOut - jamIn) / (1000 * 60 * 60 * 24));
 
         const totalPermalam = totalMalam * harga_permalam;

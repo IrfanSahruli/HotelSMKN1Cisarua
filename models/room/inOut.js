@@ -51,17 +51,17 @@ const CheckinOut = sequelize.define('checkinOut', {
         allowNull : false
     },
     total: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull : false
     },
     totalCharge: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
     },
     totalRemarks: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
     },
     totalRoom: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
     },
     paymentIn: {
         type: DataTypes.ENUM('debit', 'cash'),

@@ -20,16 +20,27 @@ const checkIn = async (req, res) => {
         }
 
         const idReservasi = await Reservasi.findByPk(id_reservasi)
-        const tanggalIn = moment(checkin, "DD-MM-YYYY").format('YYYY-MM-DD');
-        const tanggalOut = moment(checkout, "DD-MM-YYYY").format('YYYY-MM-DD');
-        const wakeup = moment(wakeUp, "DD-MM-YYYY HH:mm:ss").format('YYYY-MM-DD HH:mm:ss');
+        const roomStatus = await Room.findOne({ where: { roomNo: idReservasi.roomNo } });
+
+        if (!roomStatus) {
+            return res.status(404).json({ message: 'Room tidak ditemukan' });
+        }
+
+        const roomStatusValue = roomStatus.statusRoom;
+
+        if (roomStatusValue === 'booked') {
+            return res.status(400).json({ message: 'Kamar sudah diisi' });
+        }
+        // const tanggalIn = moment(checkin, "DD-MM-YYYY").format('YYYY-MM-DD');
+        // const tanggalOut = moment(checkout, "DD-MM-YYYY").format('YYYY-MM-DD');
+        // const wakeup = moment(wakeUp, "DD-MM-YYYY HH:mm:ss").format('YYYY-MM-DD HH:mm:ss');
 
         const inCheck = await CheckinOut.create({
             id_reservasi,
             userIn : user.username,
-            checkin : tanggalIn,
-            checkout : tanggalOut,
-            wakeUp : wakeup,
+            checkin, //: tanggalIn,
+            checkout, //: tanggalOut,
+            wakeUp, //: wakeup,
             national,
             purpose,
             paymentIn,
@@ -44,6 +55,12 @@ const checkIn = async (req, res) => {
            statusRoom : 'booked'
         }, {
              where : {roomNo : idReservasi.roomNo}
+        })
+
+        await Reservasi.update({
+           status : 'in'
+        }, {
+             where : {id : idReservasi.id}
         })
 
          res.status(200).json(inCheck);
@@ -99,6 +116,12 @@ const checkOut = async (req, res) => {
            statusRoom : 'available'
         }, {
              where : {roomNo : form.roomNO}
+         })
+        
+        await Reservasi.update({
+           status : 'out'
+        }, {
+             where : {id : form.id_reservasi}
         })
         
         const formUpdate = await CheckinOut.findByPk(id)
@@ -129,10 +152,25 @@ const getOneForm = async (req, res) => {
     }
 }
 
+const getReservasi = async (req, res) => {
+    try {
+        const reservasi = await Reservasi.findAll({
+            where : {status : 'reservasi'}
+        })
+        res.status(200).json(reservasi);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 const getCheckin = async (req, res) => {
     try {
-        const checkin = await CheckinOut.findAll({
-            where : {formStatus : 'checkin'}
+        const checkin = await Reservasi.findAll({
+            where: { status: 'in' },
+            // attributes : ['name', 'checkin', 'checkout', 'roomNo'],
+            include: [{
+                model : CheckinOut
+            }]
         })
          res.status(200).json(checkin);
     } catch (error) {
@@ -142,12 +180,34 @@ const getCheckin = async (req, res) => {
 
 const getCheckout = async (req, res) => {
     try {
-        const checkout = await CheckinOut.findAll({
-            where : {formStatus : 'checkout'}
+        const checkout = await Reservasi.findAll({
+            where : {status : 'out'}
         })
          res.status(200).json(checkout);
     } catch (error) {
          res.status(500).json({ message: error.message });
+    }
+}
+
+const Total = async (req, res) => {
+    try {
+        const total = await CheckinOut.sum('total', {
+             where : { formStatus : 'checkout'}
+        })
+
+         const checkout = await Reservasi.findAll({
+            where: { status: 'out' },
+            include: [
+                {
+                    model: CheckinOut,
+                    attributes: ['total']
+                },
+            ]
+        });
+
+        res.status(200).json({total, checkout});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -156,5 +216,7 @@ module.exports = {
     checkOut,
     getOneForm,
     getCheckin,
-    getCheckout
+    getCheckout,
+    Total,
+    getReservasi
 }

@@ -7,6 +7,8 @@ const path = require("path");
 const sequelize = require("./config/database");
 const Routes = require("./routes/routes");
 const User = require("./models/User/users");
+const Detail_Order = require("./models/FnB/Produk/detailOrder");
+const Order = require("./models/FnB/Produk/order");
 
 dotenv.config();
 const app = express();
@@ -30,7 +32,7 @@ app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await User.sync({ alter: true });
+    // await Order.sync({alter : true});
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

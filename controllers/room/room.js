@@ -46,8 +46,21 @@ const editRoom = async (req, res) => {
     }
 } 
     
+const roomOne = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const room = await Room.findOne({
+            where : {id : id}
+        })
+        res.status(200).json(room)
+    } catch (error) {
+        res.status(500).json({message : error.message})
+    }
+}
+
 module.exports = {
     createRoom,
     getAllRoom,
-    editRoom
+    editRoom,
+    roomOne
 }
