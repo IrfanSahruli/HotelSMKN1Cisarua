@@ -1,3 +1,4 @@
+const { Sequelize } = require("sequelize");
 const Produk = require("../../../models/FnB/Produk/produk");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -110,5 +111,5 @@ module.exports = {
     createProduk,
     getAllProduk,
     getProdukBySubKategori,
-    updateProduk
+    updateProduk,
 };

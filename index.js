@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 // Middleware untuk melayani file statis di folder uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -33,6 +34,7 @@ app.use("/api", Routes);
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
     // await Order.sync({alter : true});
+
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {
