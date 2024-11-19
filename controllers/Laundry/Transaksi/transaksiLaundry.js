@@ -144,6 +144,56 @@ const getTransaksiLaundryByStatus = async (req, res) => {
     }
 };
 
+const getTransaksiLaundryById = async (req, res) => {
+    try {
+        const { id } = req.params; // Ambil ID dari parameter URL
+
+        // Cari transaksi laundry berdasarkan ID
+        const transaksiLaundry = await TransaksiLaundry.findByPk(id, {
+            include: [
+                {
+                    model: User,
+                    as: "checkByInUser", // Alias untuk checkByIn
+                    attributes: ["username"], // Ambil username pengguna yang checkByIn
+                },
+                {
+                    model: User,
+                    as: "checkByOutUser", // Alias untuk checkByOut
+                    attributes: ["username"], // Ambil username pengguna yang checkByOut
+                },
+            ],
+        });
+
+        // Jika transaksi laundry tidak ditemukan
+        if (!transaksiLaundry) {
+            return res.status(404).json({
+                message: `Transaksi laundry dengan ID ${id} tidak ditemukan`,
+            });
+        }
+
+        // Sertakan username checkByIn dan checkByOut dalam hasil
+        const result = {
+            ...transaksiLaundry.toJSON(),
+            checkByIn: transaksiLaundry.checkByInUser
+                ? transaksiLaundry.checkByInUser.username
+                : null,
+            checkByOut: transaksiLaundry.checkByOutUser
+                ? transaksiLaundry.checkByOutUser.username
+                : null,
+        };
+
+        res.status(200).json({
+            message: `Berhasil mengambil data transaksi laundry dengan ID ${id}`,
+            data: result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: `Gagal mengambil data transaksi laundry dengan ID ${id}`,
+            error: error.message,
+        });
+    }
+};
+
 const deleteTransaksiLaundry = async (req, res) => {
     try {
         const { id } = req.params; // Ambil id dari parameter URL
@@ -177,5 +227,6 @@ module.exports = {
     updateTransaksiLaundryStatus,
     getAllTransaksiLaundry,
     getTransaksiLaundryByStatus,
+    getTransaksiLaundryById,
     deleteTransaksiLaundry
 };
