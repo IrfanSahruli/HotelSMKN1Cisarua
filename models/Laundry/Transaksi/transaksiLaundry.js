@@ -8,11 +8,15 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         autoIncrement: true,
         primaryKey: true
     },
-    date: {
+    dateIn: {
         type: DataTypes.DATEONLY,
         allowNull: true
     },
     customer: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    noTelepon: {
         type: DataTypes.STRING,
         allowNull: true
     },
@@ -68,12 +72,16 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
             key: "id"
         }
     },
+    dateOut: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+    },
     timeOut: {
         type: DataTypes.TIME,
         allowNull: true
     },
     weight: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true
     },
     harga: {
