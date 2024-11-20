@@ -81,7 +81,7 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         allowNull: true
     },
     weight: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true
     },
     harga: {
