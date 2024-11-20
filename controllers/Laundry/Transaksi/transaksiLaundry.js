@@ -5,7 +5,7 @@ const moment = require("moment");
 // Create TransaksiLaundry function
 const createTransaksiLaundry = async (req, res) => {
     try {
-        const user = req.user; // Pastikan req.user berisi data pengguna yang login
+        const user = req.user; // Data pengguna yang login harus berisi id dan username
 
         // Periksa apakah user ada di tabel User
         const existingUser = await User.findByPk(user.id);
@@ -15,10 +15,11 @@ const createTransaksiLaundry = async (req, res) => {
 
         // Buat transaksi laundry baru
         const newLaundryTransaction = await TransaksiLaundry.create({
-            date: new Date(), // Tanggal otomatis (sesuai DATEONLY)
-            timeIn: moment().format("HH:mm:ss"), // Waktu saat ini
+            dateIn: new Date(), // Tanggal masuk otomatis
+            timeIn: moment().format("HH:mm:ss"), // Waktu masuk otomatis
             customer: req.body.customer,
-            checkByIn: user.id,
+            noTelepon: req.body.noTelepon,
+            checkByIn: user.id, // Simpan ID user
             itemType: req.body.itemType,
             pcs: req.body.pcs,
             color_description: req.body.color_description,
@@ -29,17 +30,20 @@ const createTransaksiLaundry = async (req, res) => {
             supplyUsed: req.body.supplyUsed,
             weight: req.body.weight,
             harga: req.body.harga,
-            status: "proses"
+            status: "proses",
         });
 
         res.status(201).json({
             message: "Transaksi laundry berhasil dibuat",
-            data: newLaundryTransaction
+            data: {
+                ...newLaundryTransaction.toJSON(),
+                checkByIn: user.username, // Tambahkan username ke respon
+            },
         });
     } catch (error) {
         res.status(500).json({
             message: "Gagal membuat transaksi laundry",
-            error: error.message
+            error: error.message,
         });
     }
 };
@@ -60,10 +64,11 @@ const updateTransaksiLaundryStatus = async (req, res) => {
 
         const updatedData = { ...req.body };
 
-        // Perbarui status dan waktu keluar jika status menjadi 'diambil'
+        // Perbarui status dan waktu keluar jika status menjadi 'selesai'
         if (req.body.status === "selesai") {
             updatedData.checkByOut = user.id; // Pengguna yang login
-            updatedData.timeOut = moment().format("HH:mm:ss"); // Waktu saat ini
+            updatedData.timeOut = moment().format("HH:mm:ss"); // Waktu keluar saat ini
+            updatedData.dateOut = new Date(); // Tanggal keluar otomatis
         }
 
         // Perbarui transaksi laundry
