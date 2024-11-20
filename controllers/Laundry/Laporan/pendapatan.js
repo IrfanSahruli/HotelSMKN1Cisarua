@@ -32,12 +32,12 @@ const getDailyReport = async (req, res) => {
         // Query untuk laporan pendapatan harian
         const report = await TransaksiLaundry.findAll({
             attributes: [
-                [sequelize.fn("DATE", sequelize.col("date")), "tanggal"],
+                [sequelize.fn("DATE", sequelize.col("dateIn")), "tanggal"],
                 [sequelize.fn("SUM", sequelize.col("harga")), "total_pendapatan"],
                 [sequelize.fn("COUNT", sequelize.col("id")), "total_transaksi"]
             ],
-            group: [sequelize.fn("DATE", sequelize.col("date"))],
-            order: [[sequelize.fn("DATE", sequelize.col("date")), "ASC"]]
+            group: [sequelize.fn("DATE", sequelize.col("dateIn"))],
+            order: [[sequelize.fn("DATE", sequelize.col("dateIn")), "ASC"]]
         });
 
         // Respon dengan hasil laporan harian
@@ -63,13 +63,13 @@ const getMonthlyReport = async (req, res) => {
         // Query data bulanan
         const report = await TransaksiLaundry.findAll({
             attributes: [
-                [sequelize.fn("MONTH", sequelize.col("date")), "bulan"],
+                [sequelize.fn("MONTH", sequelize.col("dateIn")), "bulan"],
                 [sequelize.fn("SUM", sequelize.col("harga")), "total_pendapatan"],
                 [sequelize.fn("COUNT", sequelize.col("id")), "total_transaksi"]
             ],
-            where: sequelize.where(sequelize.fn("YEAR", sequelize.col("date")), tahun),
-            group: [sequelize.fn("MONTH", sequelize.col("date"))],
-            order: [[sequelize.fn("MONTH", sequelize.col("date")), "ASC"]]
+            where: sequelize.where(sequelize.fn("YEAR", sequelize.col("dateIn")), tahun),
+            group: [sequelize.fn("MONTH", sequelize.col("dateIn"))],
+            order: [[sequelize.fn("MONTH", sequelize.col("dateIn")), "ASC"]]
         });
 
         // Hitung total pendapatan dan total transaksi untuk seluruh tahun
