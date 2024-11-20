@@ -83,10 +83,32 @@ const updateTransaksiLaundryStatus = async (req, res) => {
 
 const getAllTransaksiLaundry = async (req, res) => {
     try {
-        const transaksiLaundry = await TransaksiLaundry.findAll();
+        // Ambil semua transaksi laundry dengan relasi User
+        const transaksiLaundry = await TransaksiLaundry.findAll({
+            include: [
+                {
+                    model: User,
+                    as: 'checkByInUser', // Alias untuk checkByIn
+                    attributes: ['username'], // Ambil username saja
+                },
+                {
+                    model: User,
+                    as: 'checkByOutUser', // Alias untuk checkByOut
+                    attributes: ['username'], // Ambil username saja
+                }
+            ]
+        });
+
+        // Map data untuk menyertakan username checkByIn dan checkByOut
+        const result = transaksiLaundry.map(transaction => ({
+            ...transaction.toJSON(),
+            checkByIn: transaction.checkByInUser ? transaction.checkByInUser.username : null,
+            checkByOut: transaction.checkByOutUser ? transaction.checkByOutUser.username : null,
+        }));
+
         res.status(200).json({
             message: "Berhasil mengambil semua data transaksi laundry",
-            data: transaksiLaundry
+            data: result
         });
     } catch (error) {
         res.status(500).json({
@@ -94,7 +116,7 @@ const getAllTransaksiLaundry = async (req, res) => {
             error: error.message
         });
     }
-}
+};
 
 const getTransaksiLaundryByStatus = async (req, res) => {
     const { status } = req.params; // Ambil status dari parameter URL
