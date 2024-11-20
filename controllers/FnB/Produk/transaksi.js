@@ -87,7 +87,32 @@ const getTransaksiOrder = async (req, res) => {
          return res.status(500).json({ message: error.message });
     }
 }
+
+const deleteRiwayat = async (req, res) => {
+    const id = req.params.id;
+    try {
+         await Detail_Order.destroy({ where : {id : id} }) //truncate menghapus tanpa kondisi, cascade agar tabel berelasi tidak terganggu
+        res.status(200).json({ message: 'sukses' })
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+const totalPemasukkan = async (req, res) => {
+    try {
+        const pemasukkan = await Order.sum('subTotal');
+        const biayaLayanan = await Order.sum('biayaLayanan');
+        const totalSebelum = await Order.sum('total');
+
+        res.status(200).json({pemasukkan,biayaLayanan, totalSebelum})
+    } catch (error) {
+         res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 module.exports = {
     createTransaksi,
-    getTransaksiOrder
+    getTransaksiOrder,
+    deleteRiwayat,
+    totalPemasukkan
 }

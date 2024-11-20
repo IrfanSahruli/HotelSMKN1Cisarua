@@ -23,14 +23,16 @@ const checkIn = async (req, res) => {
         const roomStatus = await Room.findOne({ where: { roomNo: idReservasi.roomNo } });
 
         if (!roomStatus) {
-            return res.status(404).json({ message: 'Room tidak ditemukan' });
+            return res.status(404).json({ message: 'Room not found' });
         }
 
         const roomStatusValue = roomStatus.statusRoom;
 
         if (roomStatusValue === 'booked') {
-            return res.status(400).json({ message: 'Kamar sudah diisi' });
+            return res.status(400).json({ message: 'Room is booked' });
         }
+
+        
         // const tanggalIn = moment(checkin, "DD-MM-YYYY").format('YYYY-MM-DD');
         // const tanggalOut = moment(checkout, "DD-MM-YYYY").format('YYYY-MM-DD');
         // const wakeup = moment(wakeUp, "DD-MM-YYYY HH:mm:ss").format('YYYY-MM-DD HH:mm:ss');

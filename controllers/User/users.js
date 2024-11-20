@@ -51,7 +51,7 @@ const Login = async (req, res) => {
             return res.status(401).json({ message: "Username tidak ditemukan" });
         }
 
-        const isMatch = bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Password salah" });
         }

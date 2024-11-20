@@ -3,6 +3,7 @@ const Reservasi = require("../../models/room/reservasi");
 const moment = require("moment");
 const Room = require("../../models/room/room");
 const User = require("../../models/User/users");
+const { Op } = require("sequelize");
 
 const reservasiHotel = async (req, res) => {
     const { id } = req.user;
@@ -27,6 +28,26 @@ const reservasiHotel = async (req, res) => {
         const noRoom = await Room.findOne({ where: { roomNo: roomNo } });
         if (!noRoom) {
             return res.status(400).json({ message: 'room not found' });
+        }
+
+        const conflictingReservations = await Reservasi.findOne({
+            where: {
+                roomNo: roomNo,
+                [Op.or]: [
+                    { checkin: { [Op.between]: [checkin, checkout] } },
+                    { checkout: { [Op.between]: [checkin, checkout] } },
+                    {
+                        [Op.and]: [
+                            { checkin: { [Op.lte]: checkin } },
+                            { checkout: { [Op.gte]: checkout } },
+                        ],
+                    },
+                ],
+            },
+        });
+
+        if (conflictingReservations) {
+            return res.status(400).json({ message: 'Room is already reserved during the specified time' });
         }
 
         const resepsionis = await User.findByPk(id);
