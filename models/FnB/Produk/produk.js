@@ -28,7 +28,7 @@ const Produk = sequelize.define("produk", {
         type: DataTypes.STRING,
         allowNull: true
     }
-}, {
+}, { 
     freezeTableName: true,
     timestamps: true
 });
