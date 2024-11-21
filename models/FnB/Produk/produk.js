@@ -24,6 +24,10 @@ const Produk = sequelize.define("produk", {
         values: ["Makanan", "Minuman", "Cemilan"],
         allowNull: true
     },
+    sub_kategori_produk: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     hargaAwal: {
         type: DataTypes.INTEGER,
         allowNull: true
