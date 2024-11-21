@@ -21,11 +21,19 @@ const Produk = sequelize.define("produk", {
     },
     kategori_produk: {
         type: DataTypes.ENUM,
-        values: ["makanan", "minuman"],
+        values: ["Makanan", "Minuman", "Cemilan"],
         allowNull: true
     },
-    sub_kategori_produk: {
-        type: DataTypes.STRING,
+    hargaAwal: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    hargaJual: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    stok: {
+        type: DataTypes.INTEGER,
         allowNull: true
     }
 }, {
