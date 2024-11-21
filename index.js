@@ -10,6 +10,7 @@ const User = require("./models/User/users");
 const TransaksiLaundry = require("./models/Laundry/Transaksi/transaksiLaundry");
 const Produk = require("./models/FnB/Produk/produk");
 const Bahan = require("./models/Laundry/Transaksi/bahan");
+const TransaksiLaundryBahan = require("./models/Laundry/Transaksi/transaksiLaundryBahan");
 
 dotenv.config();
 const app = express();
@@ -34,7 +35,7 @@ app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await Produk.sync({ alter: true });
+    // await sequelize.sync({ alter: true });
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

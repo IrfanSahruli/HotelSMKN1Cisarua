@@ -3,6 +3,9 @@ const router = require("express").Router();
 //Users
 router.use("/", require("./User/users"));
 
+//Bahan Laundry
+router.use("/", require("./Laundry/Transaksi/bahan"));
+
 //Transaksi Laundry
 router.use("/", require("./Laundry/Transaksi/transaksiLaundry"));
 

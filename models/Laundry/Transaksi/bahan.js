@@ -20,4 +20,4 @@ const Bahan = sequelize.define("bahan", {
     timestamps: true
 });
 
-module.exports = Bahan
+module.exports = Bahan;

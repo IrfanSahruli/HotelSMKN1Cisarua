@@ -1,48 +1,111 @@
 const TransaksiLaundry = require("../../../models/Laundry/Transaksi/transaksiLaundry");
 const User = require("../../../models/User/users");
+const Bahan = require("../../../models/Laundry/Transaksi/bahan");
+const TransaksiLaundryBahan = require("../../../models/Laundry/Transaksi/transaksiLaundryBahan");
 const moment = require("moment");
 
 // Create TransaksiLaundry function
 const createTransaksiLaundry = async (req, res) => {
     try {
-        const user = req.user; // Data pengguna yang login harus berisi id dan username
+        // Ambil user yang sedang login dari req.user
+        const user = req.user;
 
-        // Periksa apakah user ada di tabel User
-        const existingUser = await User.findByPk(user.id);
-        if (!existingUser) {
-            return res.status(404).json({ message: "User tidak ditemukan" });
-        }
+        const {
+            customer,
+            noTelepon,
+            itemType,
+            pcs,
+            color_description,
+            brand,
+            care_instruction,
+            remarks,
+            personInCharge,
+            supplyUsed,
+            service,
+            weight,
+            harga,
+            dateOut,
+        } = req.body;
 
         // Buat transaksi laundry baru
-        const newLaundryTransaction = await TransaksiLaundry.create({
-            dateIn: new Date(), // Tanggal masuk otomatis
-            timeIn: moment().format("HH:mm:ss"), // Waktu masuk otomatis
-            customer: req.body.customer,
-            noTelepon: req.body.noTelepon,
+        const newTransaksi = await TransaksiLaundry.create({
+            dateIn: new Date(),
+            timeIn: new Date().toLocaleTimeString(),
             checkByIn: user.id, // Simpan ID user
-            itemType: req.body.itemType,
-            pcs: req.body.pcs,
-            color_description: req.body.color_description,
-            brand: req.body.brand,
-            care_instruction: req.body.care_instruction,
-            remarks: req.body.remarks,
-            personInCharge: req.body.personInCharge,
-            supplyUsed: req.body.supplyUsed,
-            weight: req.body.weight,
-            harga: req.body.harga,
+            customer,
+            noTelepon,
+            itemType,
+            pcs,
+            color_description,
+            brand,
+            care_instruction,
+            remarks,
+            personInCharge,
+            service,
+            weight,
+            harga,
+            dateOut,
             status: "proses",
         });
 
+        let bahanDetails = [];
+
+        // Simpan data supplyUsed ke tabel pivot TransaksiLaundryBahan
+        if (supplyUsed && Array.isArray(supplyUsed)) {
+            for (const item of supplyUsed) {
+                const { bahanId } = item;
+
+                // Periksa apakah bahan dengan ID yang diberikan ada
+                const bahan = await Bahan.findByPk(bahanId);
+                if (!bahan) {
+                    return res.status(404).json({
+                        message: `Bahan dengan ID ${bahanId} tidak ditemukan`,
+                    });
+                }
+
+                // Kurangi stok bahan
+                if (bahan.stok <= 0) {
+                    return res.status(400).json({
+                        message: `Stok bahan ${bahan.namaBahan} habis.`,
+                    });
+                }
+
+                bahan.stok -= 1; // Mengurangi stok bahan sebanyak 1
+                await bahan.save(); // Simpan perubahan stok ke database
+
+                // Tambahkan data ke tabel pivot
+                await TransaksiLaundryBahan.create({
+                    transaksiLaundryId: newTransaksi.id,
+                    bahanId,
+                    jumlah: 1, // Misalkan default jumlah adalah 1
+                });
+
+                // Masukkan detail bahan ke dalam array
+                bahanDetails.push({
+                    bahanId: bahan.id,
+                    namaBahan: bahan.namaBahan,
+                });
+            }
+        }
+
+        // Ambil username berdasarkan `checkByIn`
+        const checkByInUser = await User.findByPk(user.id);
+
+        // Respons dengan detail transaksi dan bahan yang digunakan
         res.status(201).json({
             message: "Transaksi laundry berhasil dibuat",
             data: {
-                ...newLaundryTransaction.toJSON(),
-                checkByIn: user.username, // Tambahkan username ke respon
+                transaksi: {
+                    ...newTransaksi.toJSON(),
+                    checkByIn: checkByInUser?.username, // Ganti ID dengan username di respons
+                },
+                supplyUsed: bahanDetails,
             },
         });
     } catch (error) {
+        console.error(error);
         res.status(500).json({
-            message: "Gagal membuat transaksi laundry",
+            message: "Terjadi kesalahan pada server",
             error: error.message,
         });
     }
@@ -52,153 +115,203 @@ const createTransaksiLaundry = async (req, res) => {
 const updateTransaksiLaundryStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = req.user; // Data pengguna yang login
+        const { status } = req.body;
+        const user = req.user; // User yang sedang login
 
         const laundryTransaction = await TransaksiLaundry.findByPk(id);
 
         if (!laundryTransaction) {
             return res.status(404).json({
-                message: "Transaksi laundry tidak ditemukan"
+                message: `Transaksi laundry dengan ID ${id} tidak ditemukan`,
             });
         }
 
-        const updatedData = { ...req.body };
-
-        // Perbarui status dan waktu keluar jika status menjadi 'selesai'
-        if (req.body.status === "selesai") {
-            updatedData.checkByOut = user.id; // Pengguna yang login
-            updatedData.timeOut = moment().format("HH:mm:ss"); // Waktu keluar saat ini
-            updatedData.dateOut = new Date(); // Tanggal keluar otomatis
+        if (!status) {
+            return res.status(400).json({
+                message: "Status harus diisi untuk memperbarui transaksi",
+            });
         }
 
-        // Perbarui transaksi laundry
+        const updatedData = { status };
+
+        if (status === "selesai") {
+            updatedData.checkByOut = user.id; // Simpan ID user di database
+            updatedData.timeOut = moment().format("HH:mm:ss");
+            updatedData.dateOutAktual = new Date(); // Atur dateOutAktual otomatis
+        }
+
         await laundryTransaction.update(updatedData);
 
+        // Ambil username untuk `checkByIn` dan `checkByOut`
+        const checkByInUser = await User.findByPk(laundryTransaction.checkByIn);
+        const checkByOutUser = status === "selesai" ? user.username : null;
+
         res.status(200).json({
-            message: "Transaksi laundry berhasil diperbarui",
-            data: laundryTransaction
+            message: "Status transaksi laundry berhasil diperbarui",
+            data: {
+                ...laundryTransaction.toJSON(),
+                checkByIn: checkByInUser?.username || null, // Ubah ID menjadi username
+                checkByOut: checkByOutUser, // Username user yang melakukan update jika status selesai
+            },
         });
     } catch (error) {
         res.status(500).json({
-            message: "Gagal memperbarui transaksi laundry",
-            error: error.message
+            message: "Terjadi kesalahan saat memperbarui status transaksi laundry",
+            error: error.message,
         });
     }
 };
 
 const getAllTransaksiLaundry = async (req, res) => {
     try {
-        // Ambil semua transaksi laundry dengan relasi User
         const transaksiLaundry = await TransaksiLaundry.findAll({
             include: [
-                {
-                    model: User,
-                    as: 'checkByInUser', // Alias untuk checkByIn
-                    attributes: ['username'], // Ambil username saja
-                },
-                {
-                    model: User,
-                    as: 'checkByOutUser', // Alias untuk checkByOut
-                    attributes: ['username'], // Ambil username saja
-                }
-            ]
+                { model: User, as: "checkByInUser", attributes: ["username"] },
+                { model: User, as: "checkByOutUser", attributes: ["username"] },
+                { model: Bahan, attributes: ["namaBahan"] },
+            ],
         });
 
-        // Map data untuk menyertakan username checkByIn dan checkByOut
-        const result = transaksiLaundry.map(transaction => ({
+        if (transaksiLaundry.length === 0) {
+            return res.status(404).json({
+                message: "Belum ada data transaksi laundry yang tercatat",
+            });
+        }
+
+        const result = transaksiLaundry.map((transaction) => ({
             ...transaction.toJSON(),
-            checkByIn: transaction.checkByInUser ? transaction.checkByInUser.username : null,
-            checkByOut: transaction.checkByOutUser ? transaction.checkByOutUser.username : null,
+            checkByIn: transaction.checkByInUser
+                ? transaction.checkByInUser.username
+                : null,
+            checkByOut: transaction.checkByOutUser
+                ? transaction.checkByOutUser.username
+                : null,
         }));
 
         res.status(200).json({
             message: "Berhasil mengambil semua data transaksi laundry",
-            data: result
+            data: result,
         });
     } catch (error) {
         res.status(500).json({
-            message: "Gagal mengambil semua data transaksi laundry",
-            error: error.message
+            message: "Terjadi kesalahan saat mengambil data transaksi laundry",
+            error: error.message,
         });
     }
 };
 
 const getTransaksiLaundryByStatus = async (req, res) => {
-    const { status } = req.params; // Ambil status dari parameter URL
-
     try {
-        // Ambil semua transaksi laundry dengan status tertentu
-        const transaksiLaundry = await TransaksiLaundry.findAll({
-            where: { status }, // Filter berdasarkan status
-            include: [
-                {
-                    model: User,
-                    as: 'checkByInUser', // Alias untuk checkByIn
-                    attributes: ['username'], // Hanya ambil username
-                },
-                {
-                    model: User,
-                    as: 'checkByOutUser', // Alias untuk checkByOut
-                    attributes: ['username'], // Hanya ambil username
-                }
-            ]
-        });
+        const { status } = req.params;
 
-        // Map transaksi untuk menyertakan username checkByIn dan checkByOut
-        const result = transaksiLaundry.map(transaction => ({
-            ...transaction.toJSON(),
-            checkByIn: transaction.checkByInUser ? transaction.checkByInUser.username : null,
-            checkByOut: transaction.checkByOutUser ? transaction.checkByOutUser.username : null
-        }));
-
-        // Jika tidak ada data dengan status tertentu
-        if (result.length === 0) {
-            return res.status(404).json({
-                message: `Tidak ada transaksi laundry dengan status '${status}'`
+        if (!status) {
+            return res.status(400).json({
+                message: "Status harus diisi untuk mengambil data transaksi",
             });
         }
 
+        const transaksiLaundry = await TransaksiLaundry.findAll({
+            where: { status },
+            include: [
+                {
+                    model: User,
+                    as: "checkByInUser",
+                    attributes: ["username"],
+                },
+                {
+                    model: User,
+                    as: "checkByOutUser",
+                    attributes: ["username"],
+                },
+                {
+                    model: TransaksiLaundryBahan,
+                    as: 'transaksiLaundryBahans',
+                    include: [
+                        {
+                            model: Bahan,
+                            attributes: ["id", "namaBahan"],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (transaksiLaundry.length === 0) {
+            return res.status(404).json({
+                message: `Tidak ada transaksi laundry dengan status '${status}'`,
+            });
+        }
+
+        const result = transaksiLaundry.map((transaction) => {
+            // Hapus transaksiLaundryBahans dari objek transaksi
+            const transactionData = transaction.toJSON();
+            delete transactionData.transaksiLaundryBahans;
+
+            return {
+                ...transactionData,
+                checkByIn: transaction.checkByInUser?.username || null,
+                checkByOut: transaction.checkByOutUser?.username || null,
+                supplyUsed: transaction.transaksiLaundryBahans?.map((bahanData) => ({
+                    bahanId: bahanData.bahan.id,
+                    namaBahan: bahanData.bahan.namaBahan,
+                })) || [],
+            };
+        });
+
         res.status(200).json({
-            message: `Sukses mengambil data transaksi laundry dengan status '${status}'`,
-            data: result
+            message: `Berhasil mengambil data transaksi laundry dengan status '${status}'`,
+            data: result,
         });
     } catch (error) {
-        console.error(error);
+        console.error(error); // Tambahkan log untuk debug
         res.status(500).json({
-            message: `Gagal mengambil data transaksi laundry dengan status '${status}'`,
-            error: error.message
+            message: "Terjadi kesalahan saat mengambil data transaksi laundry",
+            error: error.message,
         });
     }
 };
 
 const getTransaksiLaundryById = async (req, res) => {
     try {
-        const { id } = req.params; // Ambil ID dari parameter URL
+        const { id } = req.params;
 
-        // Cari transaksi laundry berdasarkan ID
+        if (!id) {
+            return res.status(400).json({
+                message: "ID harus diisi untuk mengambil data transaksi",
+            });
+        }
+
         const transaksiLaundry = await TransaksiLaundry.findByPk(id, {
             include: [
                 {
                     model: User,
-                    as: "checkByInUser", // Alias untuk checkByIn
-                    attributes: ["username"], // Ambil username pengguna yang checkByIn
+                    as: "checkByInUser",
+                    attributes: ["username"],
                 },
                 {
                     model: User,
-                    as: "checkByOutUser", // Alias untuk checkByOut
-                    attributes: ["username"], // Ambil username pengguna yang checkByOut
+                    as: "checkByOutUser",
+                    attributes: ["username"],
+                },
+                {
+                    model: TransaksiLaundryBahan,
+                    as: "transaksiLaundryBahans",
+                    include: [
+                        {
+                            model: Bahan,
+                            attributes: ["id", "namaBahan"],
+                        },
+                    ],
                 },
             ],
         });
 
-        // Jika transaksi laundry tidak ditemukan
         if (!transaksiLaundry) {
             return res.status(404).json({
                 message: `Transaksi laundry dengan ID ${id} tidak ditemukan`,
             });
         }
 
-        // Sertakan username checkByIn dan checkByOut dalam hasil
         const result = {
             ...transaksiLaundry.toJSON(),
             checkByIn: transaksiLaundry.checkByInUser
@@ -207,7 +320,14 @@ const getTransaksiLaundryById = async (req, res) => {
             checkByOut: transaksiLaundry.checkByOutUser
                 ? transaksiLaundry.checkByOutUser.username
                 : null,
+            supplyUsed: transaksiLaundry.transaksiLaundryBahans?.map((bahanData) => ({
+                bahanId: bahanData.bahan.id,
+                namaBahan: bahanData.bahan.namaBahan,
+            })) || [],
         };
+
+        // Hapus transaksiLaundryBahans dari objek result
+        delete result.transaksiLaundryBahans;
 
         res.status(200).json({
             message: `Berhasil mengambil data transaksi laundry dengan ID ${id}`,
@@ -215,7 +335,7 @@ const getTransaksiLaundryById = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            message: `Gagal mengambil data transaksi laundry dengan ID ${id}`,
+            message: "Terjadi kesalahan saat mengambil data transaksi laundry",
             error: error.message,
         });
     }
@@ -223,28 +343,31 @@ const getTransaksiLaundryById = async (req, res) => {
 
 const deleteTransaksiLaundry = async (req, res) => {
     try {
-        const { id } = req.params; // Ambil id dari parameter URL
+        const { id } = req.params;
 
-        // Cari transaksi laundry berdasarkan ID
-        const laundryTransaction = await TransaksiLaundry.findByPk(id);
-
-        // Jika transaksi tidak ditemukan
-        if (!laundryTransaction) {
-            return res.status(404).json({
-                message: `Transaksi laundry dengan id ${id} tidak ditemukan`
+        if (!id) {
+            return res.status(400).json({
+                message: "ID harus diisi untuk menghapus transaksi laundry",
             });
         }
 
-        // Hapus transaksi laundry
+        const laundryTransaction = await TransaksiLaundry.findByPk(id);
+
+        if (!laundryTransaction) {
+            return res.status(404).json({
+                message: `Transaksi laundry dengan ID ${id} tidak ditemukan`,
+            });
+        }
+
         await laundryTransaction.destroy();
 
         res.status(200).json({
-            message: `Berhasil menghapus transaksi laundry dengan id ${id}`
+            message: `Berhasil menghapus transaksi laundry dengan ID ${id}`,
         });
     } catch (error) {
         res.status(500).json({
-            message: `Gagal menghapus transaksi laundry dengan id ${id}`,
-            error: error.message
+            message: "Terjadi kesalahan saat menghapus transaksi laundry",
+            error: error.message,
         });
     }
 };
