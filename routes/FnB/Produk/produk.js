@@ -2,7 +2,9 @@ const express = require("express");
 const {
     createProduk,
     getAllProduk,
+    getProdukByKategori,
     getProdukBySubKategori,
+    getProdukTerbaru,
     updateProduk,
     deleteProduk,
 } = require("../../../controllers/FnB/Produk/produk");
@@ -14,9 +16,12 @@ const router = express.Router();
 
 router.post("/produk", upload.single("foto_produk"), protectApp(["admin"]), createProduk); //Tambah produk
 router.get("/produk", protectApp(["admin", "kasir"]), getAllProduk); //Get semua produk
+
 router.get("/produk/:sub_kategori_produk", protectApp(["admin", "kasir"]), getProdukBySubKategori); //Get produk berdasarkan sub kategori
-router.put("/produk/:id", upload.single("foto_produk"), protectApp(["admin"]), updateProduk); //Update produk berdasarkan id produk
 router.delete("/delete/:id", protectApp(["admin", "kasir"]), deleteProduk)
-// router.get("/produk/:kategori_produk/sub-kategori", getProdukByKategori); //Update produk berdasarkan id produk
+
+router.get("/produk/:kategori_produk", protectApp(["kasir"]), getProdukByKategori); //Get produk berdasarkan kategori
+router.get("/produk/terbaru", getProdukTerbaru); //Get produk terbaru
+router.put("/produk/:id", upload.single("foto_produk"), protectApp(["admin"]), updateProduk); //Update produk berdasarkan id produk
 
 module.exports = router;

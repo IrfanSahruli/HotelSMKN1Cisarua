@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../../config/database");
 const User = require("../../User/users");
+const Bahan = require("./bahan");
 
 const TransaksiLaundry = sequelize.define("transaksi laundry", {
     id: {
@@ -28,7 +29,7 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: User, // Tabel user sebagai referensi
+            model: User,
             key: "id"
         }
     },
@@ -60,8 +61,9 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         type: DataTypes.STRING,
         allowNull: true
     },
-    supplyUsed: {
-        type: DataTypes.STRING,
+    service: {
+        type: DataTypes.ENUM,
+        values: ["express", "standar"],
         allowNull: true
     },
     checkByOut: {
@@ -73,6 +75,10 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         }
     },
     dateOut: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+    },
+    dateOutAktual: {
         type: DataTypes.DATEONLY,
         allowNull: true
     },
@@ -92,7 +98,7 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         type: DataTypes.ENUM,
         values: ["proses", "selesai"],
         allowNull: true
-    }
+    },
 }, {
     freezeTableName: true,
     timestamps: true

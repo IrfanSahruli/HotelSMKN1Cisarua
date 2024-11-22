@@ -7,6 +7,10 @@ router.use("/", require("./User/users"));
 router.use('/', require('./room/room'))
 router.use('/', require('./room/reservasi'))
 router.use('/', require('./room/checkinOut'))
+
+//Bahan Laundry
+router.use("/", require("./Laundry/Transaksi/bahan"));
+
 //Transaksi Laundry
 router.use("/", require("./Laundry/Transaksi/transaksiLaundry"));
 
