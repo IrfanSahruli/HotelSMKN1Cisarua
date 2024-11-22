@@ -205,21 +205,6 @@ const deleteProduk = async (req, res) => {
     }
 };
 
-const deleteProduk = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const produk = await Produk.findByPk(id);
-        if (!produk) {
-            return res.status(404).json({ success: false, message: "Produk tidak ditemukan" });
-        }
-
-         await Produk.destroy({ where: { id: id } })
-        res.status(200).json({ message: 'sukses' })
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-}
-
 module.exports = {
     createProduk,
     getAllProduk,
