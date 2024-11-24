@@ -62,8 +62,7 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         allowNull: true
     },
     service: {
-        type: DataTypes.ENUM,
-        values: ["express", "standar"],
+        type: DataTypes.STRING,
         allowNull: true
     },
     checkByOut: {
@@ -78,11 +77,15 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         type: DataTypes.DATEONLY,
         allowNull: true
     },
+    timeOut: {
+        type: DataTypes.TIME,
+        allowNull: true
+    },
     dateOutAktual: {
         type: DataTypes.DATEONLY,
         allowNull: true
     },
-    timeOut: {
+    timeOutAktual: {
         type: DataTypes.TIME,
         allowNull: true
     },
