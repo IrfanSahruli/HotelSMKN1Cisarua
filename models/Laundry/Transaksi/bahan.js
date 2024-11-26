@@ -11,7 +11,11 @@ const Bahan = sequelize.define("bahan", {
         type: DataTypes.STRING,
         allowNull: true
     },
-    stok: {
+    stokAwal: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    stokAkhir: {
         type: DataTypes.INTEGER,
         allowNull: true
     }

@@ -2,12 +2,13 @@ const Bahan = require("../../../models/Laundry/Transaksi/bahan");
 
 // Buat bahan baru
 const createBahan = async (req, res) => {
-    const { namaBahan, stok } = req.body;
+    const { namaBahan, stokAwal, stokAkhir } = req.body;
 
     try {
         const bahan = await Bahan.create({
             namaBahan,
-            stok
+            stokAwal,
+            stokAkhir
         });
 
         res.status(201).json({
@@ -62,7 +63,7 @@ const getBahanById = async (req, res) => {
 // Perbarui bahan berdasarkan ID
 const updateBahan = async (req, res) => {
     const { id } = req.params;
-    const { namaBahan, stok } = req.body;
+    const { namaBahan, stokAwal, stokAkhir } = req.body;
 
     try {
         const bahan = await Bahan.findByPk(id);
@@ -75,8 +76,9 @@ const updateBahan = async (req, res) => {
         }
 
         const updatedBahan = await bahan.update({
-            namaBahan: namaBahan || bahan.namaBahan,
-            stok: stok || bahan.stok
+            namaBahan: namaBahan ?? bahan.namaBahan,
+            stokAwal: stokAwal ?? bahan.stokAwal,
+            stokAkhir: stokAkhir ?? bahan.stokAkhir
         });
 
         res.status(200).json({

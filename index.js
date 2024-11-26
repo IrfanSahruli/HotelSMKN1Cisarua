@@ -35,7 +35,7 @@ app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
-    // await sequelize.sync({ alter: true });
+    // await Bahan.sync({ alter: true });
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

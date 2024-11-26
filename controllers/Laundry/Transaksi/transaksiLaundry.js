@@ -61,13 +61,13 @@ const createTransaksiLaundry = async (req, res) => {
                     });
                 }
 
-                if (bahan.stok <= 0) {
+                if (bahan.stokAkhir <= 0) {
                     return res.status(400).json({
                         message: `Stok bahan ${bahan.namaBahan} habis.`,
                     });
                 }
 
-                bahan.stok -= 1; // Kurangi stok
+                bahan.stokAkhir -= 1; // Kurangi stokAkhir
                 await bahan.save();
 
                 await TransaksiLaundryBahan.create({
