@@ -2,19 +2,20 @@ const Bahan = require("../../../models/Laundry/Transaksi/bahan");
 
 // Buat bahan baru
 const createBahan = async (req, res) => {
-    const { namaBahan, stokAwal, stokAkhir } = req.body;
+    const { namaBahan, stokAwal } = req.body;
 
     try {
+        // Pastikan stokAkhir otomatis mengikuti stokAwal
         const bahan = await Bahan.create({
             namaBahan,
             stokAwal,
-            stokAkhir
+            stokAkhir: stokAwal, // stokAkhir diatur sama dengan stokAwal
         });
 
         res.status(201).json({
             success: true,
             message: "Bahan berhasil dibuat",
-            data: bahan
+            data: bahan,
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
