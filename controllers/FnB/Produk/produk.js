@@ -12,7 +12,6 @@ const createProduk = async (req, res) => {
         hargaJual,
         stok,
         kategori_produk,
-        sub_kategori_produk,
     } = req.body;
 
     try {
@@ -29,8 +28,7 @@ const createProduk = async (req, res) => {
             hargaAwal,
             hargaJual,
             stok,
-            kategori_produk,
-            sub_kategori_produk,
+            kategori_produk
         });
 
         res.status(201).json({

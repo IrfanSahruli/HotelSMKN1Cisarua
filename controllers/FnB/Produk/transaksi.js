@@ -36,16 +36,26 @@ const createTransaksi = async (req, res) => {
                     return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan` });
                 }
 
-                const hargaTotal = produks.harga * item.jumlah;
+                const hargaTotal = produks.hargaJual * item.jumlah;
 
                 await Detail_Order.create({
                     order_id: order.id,
                     id_produk: item.id_produk,
                     jumlah: item.jumlah,
                     subTotal: hargaTotal,
+                    nama: order.atasNama,
+                    tambahan : item.tambahan
                 });
 
-                totalBiaya += hargaTotal;
+                    await Produk.update(
+                    {
+                        stok: produks.stok - item.jumlah,
+                    },
+                    {
+                        where: { id: item.id_produk },
+                    }
+                );
+                totalBiaya =+ hargaTotal
             }
         }
 

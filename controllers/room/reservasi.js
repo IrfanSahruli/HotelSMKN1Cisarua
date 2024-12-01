@@ -17,13 +17,16 @@ const reservasiHotel = async (req, res) => {
         phone,
         children,
         adult,
-        remarks
+        remarks,
+        bookedBy,
+        stay,
+        down,
+        remaining,
+        rate,
+        total,
+        payment
     } = req.body;
     try {
-       let totalRemarks = 0;
-       let totalSemua = 0;
-       let totalRoom = 0;
-       let jumlahTotal = 0;
 
         const noRoom = await Room.findOne({ where: { roomNo: roomNo } });
         if (!noRoom) {
@@ -58,50 +61,51 @@ const reservasiHotel = async (req, res) => {
 
         const reservasi = await Reservasi.create({
             userId: id,
-            bookedBy: namaResepsionis,
+            bookedBy,
             name,
-            checkin,//: tanggalIn,
-            checkout,//: tanggalOut,
+            checkin,
+            checkout,
             roomNo,
             roomType,
             email,
             phone,
             children,
             adult,
-            subTotalRemarks: totalRemarks,
-            subTotalRoom: totalRoom,
-            total: totalSemua
+            stay,
+            down,
+            remaining,
+            total,
+            rate,
+            payment
         });
 
         if (remarks) {
             for (let index = 0; index < remarks.length; index++) {
-                const { detail, price } = remarks[index];
+                const { detail } = remarks[index];
                 await Remarks.create({
                     id_reservasi: reservasi.id,
                     detail,
-                    price,
                 });
-                jumlahTotal += price;
             }
         }
 
-        const harga_permalam = noRoom.harga;
-        const jamIn = new Date(checkin);
-        const jamOut = new Date(checkout);
-        const totalMalam = Math.ceil((jamOut - jamIn) / (1000 * 60 * 60 * 24));
+        // const harga_permalam = noRoom.harga;
+        // const jamIn = new Date(checkin);
+        // const jamOut = new Date(checkout);
+        // const totalMalam = Math.ceil((jamOut - jamIn) / (1000 * 60 * 60 * 24));
 
-        const totalPermalam = totalMalam * harga_permalam;
-        const jumlahSemua = totalPermalam + jumlahTotal;
+        // const totalPermalam = totalMalam * harga_permalam;
+        // const jumlahSemua = totalPermalam + jumlahTotal;
 
-        console.log(jumlahTotal);
-        console.log(totalPermalam);
+        // console.log(jumlahTotal);
+        // console.log(totalPermalam);
         
 
-        await reservasi.update({
-            subTotalRemarks: jumlahTotal,
-            subTotalRoom: totalPermalam,
-            total: jumlahSemua
-        });
+        // await reservasi.update({
+        //     subTotalRemarks: jumlahTotal,
+        //     subTotalRoom: totalPermalam,
+        //     total: jumlahSemua
+        // });
 
         res.status(200).json(reservasi);
     } catch (error) {

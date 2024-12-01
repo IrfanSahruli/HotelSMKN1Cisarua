@@ -61,17 +61,29 @@ const Reservasi = sequelize.define('reservasi', {
         allowNull: false,
         defaultValue : 'reservasi'
     },
-    subTotalRemarks: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    subTotalRoom: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
     total: {
         type: DataTypes.INTEGER,
         allowNull: true,
+    },
+    stay: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    down: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    remaining: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    rate: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    payment: {
+        type: DataTypes.ENUM('cash', 'debit'),
+        allowNull : true
     }
 }, {
     freezeTableName : true,

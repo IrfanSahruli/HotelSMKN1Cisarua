@@ -9,36 +9,28 @@ const Produk = sequelize.define("produk", {
     },
     judul_produk: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     foto_produk: {
         type: DataTypes.STRING,
-        allowNull: true
-    },
-    harga: {
-        type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
     },
     kategori_produk: {
         type: DataTypes.ENUM,
         values: ["Makanan", "Minuman", "Cemilan"],
-        allowNull: true
-    },
-    sub_kategori_produk: {
-        type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     hargaAwal: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
     },
     hargaJual: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
     },
     stok: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
     }
 }, { 
     freezeTableName: true,

@@ -18,9 +18,6 @@ const Remarks = sequelize.define('remarks', {
     detail: {
         type: DataTypes.STRING,
     },
-    price: {
-        type: DataTypes.INTEGER
-    }
 }, {
     freezeTableName : true,
     timestamps : true

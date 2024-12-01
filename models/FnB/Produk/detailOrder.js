@@ -31,6 +31,14 @@ const Detail_Order = sequelize.define("order_detail", {
     subTotal :{
         type: DataTypes.INTEGER,
         allowNull : false
+    },
+    nama: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    tambahan: {
+        type: DataTypes.STRING,
+        allowNull : true
     }
 }, {
     freezeTableName: true,
