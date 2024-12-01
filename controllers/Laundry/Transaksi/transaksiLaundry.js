@@ -160,6 +160,16 @@ const getAllTransaksiLaundry = async (req, res) => {
             include: [
                 { model: User, as: "checkByInUser", attributes: ["username"] },
                 { model: User, as: "checkByOutUser", attributes: ["username"] },
+                {
+                    model: TransaksiLaundryBahan,
+                    as: "transaksiLaundryBahans",
+                    include: [
+                        {
+                            model: Bahan,
+                            attributes: ["id", "namaBahan"],
+                        },
+                    ],
+                },
             ],
         });
 
@@ -169,11 +179,24 @@ const getAllTransaksiLaundry = async (req, res) => {
             });
         }
 
-        const result = transaksiLaundry.map((transaction) => ({
-            ...transaction.toJSON(),
-            checkByIn: transaction.checkByInUser?.username || null,
-            checkByOut: transaction.checkByOutUser?.username || null,
-        }));
+        const result = transaksiLaundry.map((transaction) => {
+            // Mengonversi data transaksi menjadi JSON
+            const transactionData = transaction.toJSON();
+
+            // Tambahkan informasi supplyUsed
+            const supplyUsed =
+                transactionData.transaksiLaundryBahans?.map((bahanData) => ({
+                    bahanId: bahanData.bahan.id,
+                    namaBahan: bahanData.bahan.namaBahan,
+                })) || [];
+
+            return {
+                ...transactionData,
+                checkByIn: transaction.checkByInUser?.username || null,
+                checkByOut: transaction.checkByOutUser?.username || null,
+                supplyUsed, // Tambahkan informasi supplyUsed
+            };
+        });
 
         res.status(200).json({
             message: "Berhasil mengambil semua data transaksi laundry",
