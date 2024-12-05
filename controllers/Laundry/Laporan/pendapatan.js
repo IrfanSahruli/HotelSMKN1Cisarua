@@ -95,12 +95,12 @@ const getYearlyReport = async (req, res) => {
     try {
         const report = await TransaksiLaundry.findAll({
             attributes: [
-                [sequelize.fn("YEAR", sequelize.col("date")), "tahun"],
+                [sequelize.fn("YEAR", sequelize.col("dateIn")), "tahun"],
                 [sequelize.fn("SUM", sequelize.col("harga")), "total_pendapatan"],
                 [sequelize.fn("COUNT", sequelize.col("id")), "total_transaksi"]
             ],
-            group: [sequelize.fn("YEAR", sequelize.col("date"))],
-            order: [[sequelize.fn("YEAR", sequelize.col("date")), "ASC"]]
+            group: [sequelize.fn("YEAR", sequelize.col("dateIn"))],
+            order: [[sequelize.fn("YEAR", sequelize.col("dateIn")), "ASC"]]
         });
 
         res.status(200).json({
