@@ -97,6 +97,22 @@ const TransaksiLaundry = sequelize.define("transaksi laundry", {
         type: DataTypes.INTEGER,
         allowNull: true
     },
+    biayaLayanan: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    subTotal: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    dp: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    sisa: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     status: {
         type: DataTypes.ENUM,
         values: ["proses", "selesai"],

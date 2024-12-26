@@ -26,6 +26,10 @@ const createTransaksiLaundry = async (req, res) => {
             timeOut,
         } = req.body;
 
+        const biayaLayanan = Math.round(harga * 0.21);
+
+        const subTotal = harga + biayaLayanan;
+
         // Buat transaksi laundry baru
         const newTransaksi = await TransaksiLaundry.create({
             dateIn: moment().format("YYYY-MM-DD"),
@@ -43,6 +47,8 @@ const createTransaksiLaundry = async (req, res) => {
             service,
             weight,
             harga,
+            biayaLayanan,
+            subTotal,
             dateOut,
             timeOut,
             status: "proses",
@@ -98,6 +104,39 @@ const createTransaksiLaundry = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Terjadi kesalahan saat membuat transaksi laundry",
+            error: error.message,
+        });
+    }
+};
+
+const updateDpTransaksiLaundry = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { dp } = req.body;
+
+        const laundryTransaction = TransaksiLaundry.findByPk(id);
+
+        if (!laundryTransaction) {
+            return res.status(404).json({
+                message: `Transaksi laundry dengan ID ${id} tidak ditemukan`,
+            });
+        }
+
+        const subTotal = laundryTransaction.subTotal; // Ambil nilai subTotal
+        const sisa = subTotal - dp;
+
+        laundryTransaction.update({
+            dp,
+            sisa
+        });
+
+        res.status(200).json({
+            message: "DP dan sisa transaksi laundry berhasil diperbarui",
+            data: laundryTransaction,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Terjadi kesalahan saat memperbarui DP transaksi laundry",
             error: error.message,
         });
     }
@@ -343,6 +382,7 @@ const deleteTransaksiLaundry = async (req, res) => {
 
 module.exports = {
     createTransaksiLaundry,
+    updateDpTransaksiLaundry,
     updateTransaksiLaundryStatus,
     getTransaksiLaundryByStatus,
     getAllTransaksiLaundry,
