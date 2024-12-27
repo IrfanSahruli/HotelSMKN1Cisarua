@@ -22,6 +22,7 @@ const createTransaksiLaundry = async (req, res) => {
             service,
             weight,
             harga,
+            dp,
             dateOut,
             timeOut,
         } = req.body;
@@ -29,6 +30,8 @@ const createTransaksiLaundry = async (req, res) => {
         const biayaLayanan = Math.round(harga * 0.21);
 
         const subTotal = harga + biayaLayanan;
+
+        const sisa = subTotal - dp;
 
         // Buat transaksi laundry baru
         const newTransaksi = await TransaksiLaundry.create({
@@ -49,6 +52,8 @@ const createTransaksiLaundry = async (req, res) => {
             harga,
             biayaLayanan,
             subTotal,
+            dp,
+            sisa,
             dateOut,
             timeOut,
             status: "proses",
@@ -109,39 +114,6 @@ const createTransaksiLaundry = async (req, res) => {
     }
 };
 
-const updateDpTransaksiLaundry = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { dp } = req.body;
-
-        const laundryTransaction = TransaksiLaundry.findByPk(id);
-
-        if (!laundryTransaction) {
-            return res.status(404).json({
-                message: `Transaksi laundry dengan ID ${id} tidak ditemukan`,
-            });
-        }
-
-        const subTotal = laundryTransaction.subTotal; // Ambil nilai subTotal
-        const sisa = subTotal - dp;
-
-        laundryTransaction.update({
-            dp,
-            sisa
-        });
-
-        res.status(200).json({
-            message: "DP dan sisa transaksi laundry berhasil diperbarui",
-            data: laundryTransaction,
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: "Terjadi kesalahan saat memperbarui DP transaksi laundry",
-            error: error.message,
-        });
-    }
-};
-
 // **Update Status TransaksiLaundry**
 const updateTransaksiLaundryStatus = async (req, res) => {
     try {
@@ -169,6 +141,7 @@ const updateTransaksiLaundryStatus = async (req, res) => {
             updatedData.checkByOut = user.id;
             updatedData.timeOutAktual = moment().format("HH:mm:ss");
             updatedData.dateOutAktual = moment().format("YYYY-MM-DD");
+            updatedData.sisa = 0;
         }
 
         await laundryTransaction.update(updatedData);
@@ -382,7 +355,6 @@ const deleteTransaksiLaundry = async (req, res) => {
 
 module.exports = {
     createTransaksiLaundry,
-    updateDpTransaksiLaundry,
     updateTransaksiLaundryStatus,
     getTransaksiLaundryByStatus,
     getAllTransaksiLaundry,
