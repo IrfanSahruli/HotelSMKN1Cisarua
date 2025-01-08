@@ -15,13 +15,13 @@ const Room = sequelize.define('room', {
         type: DataTypes.STRING,
         allowNull : false
     },
-    harga: {
-        type: DataTypes.INTEGER,
-        allowNull : false
-    },
     statusRoom: {
-        type: DataTypes.ENUM('booked', 'available'),
-        defaultValue : 'available'
+        type: DataTypes.ENUM('VR', 'VD', 'OD', 'OC'),
+        defaultValue : 'VR'
+    },
+    gabungan: {
+        type: DataTypes.STRING,
+        allowNull : false
     }
 }, {
     freezeTableName : true,

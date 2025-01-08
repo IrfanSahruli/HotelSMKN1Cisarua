@@ -1,32 +1,36 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
-const CheckinOut = require("./inOut");
+// const CheckinOut = require("./inOut");
+const ReservasiGroup = require("./reservasiG");
 
-const Other = sequelize.define('other', {
+const Makanan = sequelize.define('makanan', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true 
     },
-    id_inOut: {
+    id_reservasi_group: {
         type: DataTypes.INTEGER,
         references: {
-            model: CheckinOut,
+            model: ReservasiGroup,
             key : 'id'
         }
     },
-    detail: {
+    meal: {
         type: DataTypes.STRING,
     },
-    price: {
-        type: DataTypes.INTEGER
+    tours: {
+        type: DataTypes.STRING
     },
+    account: {
+        type: DataTypes.STRING
+    }
 }, {
     freezeTableName : true,
     timestamps : true
 })
 
-CheckinOut.hasMany(Other, {foreignKey: 'id_inOut'});
-Other.belongsTo(CheckinOut, { foreignKey: 'id_inOut' });
+ReservasiGroup.hasMany(Makanan, {foreignKey: 'id_reservasi_group'});
+Makanan.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
 
-module.exports = Other;
+module.exports = Makanan;

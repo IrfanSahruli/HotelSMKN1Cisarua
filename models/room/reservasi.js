@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, ENUM } = require("sequelize");
 const sequelize = require("../../config/database");
 const User = require("../User/users");
 
@@ -16,11 +16,15 @@ const Reservasi = sequelize.define('reservasi', {
             key : 'id'
         }
     },
-    bookedBy: {
+    name : {
         type: DataTypes.STRING,
         allowNull : false
     },
-    name : {
+    email: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    phone: {
         type: DataTypes.STRING,
         allowNull : false
     },
@@ -32,21 +36,21 @@ const Reservasi = sequelize.define('reservasi', {
         type: DataTypes.DATE,
         allowNull : false
     },
-    roomType: {
-        type: DataTypes.STRING,
-        allowNull : false
-    },
-    roomNo: {
+    stay: {
         type: DataTypes.INTEGER,
-        allowNull : false
+        allowNull: false
     },
-    email: {
+     bookedBy: {
         type: DataTypes.STRING,
         allowNull : false
     },
-    phone: {
+    room: {
         type: DataTypes.STRING,
         allowNull : false
+    },
+    preferency: {
+        type: DataTypes.ENUM('Smoking', 'No Smoking'),
+         allowNull : false
     },
     adult: {
         type: DataTypes.STRING,
@@ -55,6 +59,14 @@ const Reservasi = sequelize.define('reservasi', {
     children: {
         type: DataTypes.STRING,
         allowNull : false
+    },
+    rate: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    total: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     },
     status: {
         type: DataTypes.ENUM('reservasi', 'in', 'out'),
@@ -65,10 +77,6 @@ const Reservasi = sequelize.define('reservasi', {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
-    stay: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     down: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -77,12 +85,8 @@ const Reservasi = sequelize.define('reservasi', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    rate: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     payment: {
-        type: DataTypes.ENUM('cash', 'debit'),
+        type: DataTypes.ENUM('cash', 'debit', 'transfer'),
         allowNull : true
     }
 }, {

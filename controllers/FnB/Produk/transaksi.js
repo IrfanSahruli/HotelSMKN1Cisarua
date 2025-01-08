@@ -1,5 +1,6 @@
 const Detail_Order = require("../../../models/FnB/Produk/detailOrder");
 const Order = require("../../../models/FnB/Produk/order");
+
 const Produk = require("../../../models/FnB/Produk/produk");
 const User = require("../../../models/User/users");
 
@@ -9,24 +10,24 @@ const createTransaksi = async (req, res) => {
 
     try {
         let totalBiaya = 0;
-        const biayaLayanan = 3000;
+        let totalppn = 0;
+        let totalLayanan = 0;
 
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-       
         const order = await Order.create({
             userId,
             kasirName: user.username,
             atasNama,
-            total: 0, 
-            biayaLayanan,
-            subTotal: 0, 
+            total: 0,
+            biayaLayanan: 0,
+            subTotal: 0,
+            ppn: 0,
         });
 
-        
         if (produk) {
             for (let index = 0; index < produk.length; index++) {
                 const item = produk[index];
@@ -36,18 +37,32 @@ const createTransaksi = async (req, res) => {
                     return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan` });
                 }
 
-                const hargaTotal = produks.hargaJual * item.jumlah;
+                if (produks.stok == 0) {
+                    return res.status(401).json({ message: 'Stok produk habis' });
+                }
 
+                const hargaTotal = produks.hargaJual * item.jumlah;
+                const bayarPpn = hargaTotal * 10 / 100;
+                const bayarLayanan = hargaTotal * 11 / 100;
+
+                totalBiaya += hargaTotal;
+                totalppn += bayarPpn;
+                totalLayanan += bayarLayanan;
+                const totalSemua = hargaTotal + bayarPpn + bayarLayanan;
                 await Detail_Order.create({
                     order_id: order.id,
                     id_produk: item.id_produk,
                     jumlah: item.jumlah,
-                    subTotal: hargaTotal,
+                    total: hargaTotal,
                     nama: order.atasNama,
-                    tambahan : item.tambahan
+                    tambahan: item.tambahan,
+                    namaKasir: order.kasirName,
+                    layanan: bayarLayanan,
+                    ppn: bayarPpn,
+                    subTotal : totalSemua
                 });
 
-                    await Produk.update(
+                await Produk.update(
                     {
                         stok: produks.stok - item.jumlah,
                     },
@@ -55,21 +70,18 @@ const createTransaksi = async (req, res) => {
                         where: { id: item.id_produk },
                     }
                 );
-                totalBiaya =+ hargaTotal
             }
         }
 
-        
-        const totalSemua = totalBiaya + biayaLayanan;
+        const totalSemua = totalBiaya + totalLayanan + totalppn;
 
-        
         await order.update({
             total: totalBiaya,
-            biayaLayanan,
+            biayaLayanan: totalLayanan,
+            ppn: totalppn,
             subTotal: totalSemua,
         });
 
-        
         const orderUpdate = await Order.findByPk(order.id);
 
         return res.status(200).json(orderUpdate);
@@ -78,20 +90,10 @@ const createTransaksi = async (req, res) => {
     }
 };
 
+
 const getTransaksiOrder = async (req, res) => {
     try {
-        const order = await Order.findAll({
-        include: [
-            {
-                model: Detail_Order,
-                include: [
-                    {
-                        model: Produk
-                    }
-                ]
-            }
-        ]
-    });
+        const order = await Detail_Order.findAll();
         return res.status(200).json(order);
     } catch (error) {
          return res.status(500).json({ message: error.message });

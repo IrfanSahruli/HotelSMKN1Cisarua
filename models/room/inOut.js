@@ -1,16 +1,13 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
 const Reservasi = require("./reservasi");
+const ReservasiGroup = require("./reservasiG");
 
-const CheckinOut = sequelize.define('checkinOut', {
+const Registrasi = sequelize.define('registrasi', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true 
-    },
-    roomNO: {
-        type: DataTypes.INTEGER,
-        allowNull : false
     },
     userIn: {
         type: DataTypes.STRING,
@@ -21,65 +18,100 @@ const CheckinOut = sequelize.define('checkinOut', {
     },
     id_reservasi: {
         type: DataTypes.INTEGER,
+        allowNull : true,
         references: {
             model: Reservasi,
             key : 'id'
         }
     },
-    checkin: {
-        type: DataTypes.DATE,
-        allowNull : false
+    id_reservasi_group: {
+        allowNull : true,
+        type: DataTypes.INTEGER,
+        references: {
+            model: ReservasiGroup,
+            key : 'id'
+        }
     },
-    checkout: {
-        type: DataTypes.DATE,
-        allowNull : false
-    },
-    wakeUp: {
-        type: DataTypes.DATE,
-        allowNull : false
-    },
-    national: {
+    fullname: {
         type: DataTypes.STRING,
         allowNull : false
     },
-    purpose: {
+    title: {
         type: DataTypes.STRING,
         allowNull : false
     },
-    description: {
+    address: {
         type: DataTypes.STRING,
+        allowNull : false
+    },
+    postal: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    id_number: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    itype: {
+        type: DataTypes.ENUM('KTP/SIM', 'Passport'),
+        allowNull: false,
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    phone: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    subtotal: {
+        type: DataTypes.INTEGER,
+        allowNull : false
+    },
+    deposit: {
+        type: DataTypes.INTEGER,
         allowNull : false
     },
     total: {
         type: DataTypes.INTEGER,
         allowNull : false
     },
-    totalCharge: {
+    paymentmethod: {
+        type: DataTypes.STRING,
+        allowNull : false
+    },
+    cardNo: {
         type: DataTypes.INTEGER,
+        // allowNull : false
     },
-    totalRemarks: {
-        type: DataTypes.INTEGER,
+    cvv: {
+        type: DataTypes.STRING,
+        // allowNull: false,
     },
-    totalRoom: {
-        type: DataTypes.INTEGER,
+    exp: {
+        type: DataTypes.DATE,
     },
-    paymentIn: {
-        type: DataTypes.ENUM('debit', 'cash'),
-        allowNull: false,
-    },
-    paymentOut: {
-        type: DataTypes.ENUM('debit', 'cash'),
+    front_desk: {
+        type: DataTypes.STRING,
+        allowNull : false
     },
     formStatus: {
         type: DataTypes.ENUM('checkin', 'checkout'),
         defaultValue : 'checkin'
+    },
+    formStatusGP: {
+        type: DataTypes.ENUM('Group', 'Personal'),
+        allowNull : false
     }
 }, {
     freezeTableName : true,
     timestamps : true
 })
 
-Reservasi.hasMany(CheckinOut, {foreignKey: 'id_reservasi'});
-CheckinOut.belongsTo(Reservasi, { foreignKey: 'id_reservasi' });
+Reservasi.hasMany(Registrasi, {foreignKey: 'id_reservasi'});
+Registrasi.belongsTo(Reservasi, { foreignKey: 'id_reservasi' });
 
-module.exports = CheckinOut;
+ReservasiGroup.hasMany(Registrasi, {foreignKey: 'id_reservasi_group'});
+Registrasi.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
+
+module.exports = Registrasi;

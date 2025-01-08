@@ -35,6 +35,10 @@ const Order = sequelize.define("order", {
     subTotal :{
         type: DataTypes.INTEGER,
         allowNull : false
+    },
+    ppn: {
+        type: DataTypes.INTEGER,
+        allowNull : false
     }
 }, {
     freezeTableName: true,

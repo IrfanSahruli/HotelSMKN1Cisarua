@@ -1,12 +1,14 @@
+const Reservasi = require("../../models/room/reservasi");
 const Room = require("../../models/room/room");
+const RoomG = require("../../models/room/roomG");
 
 const createRoom = async (req, res) => {
-    const { roomNo, roomType, harga } = req.body;
+    const { roomNo, roomType } = req.body;
     try {
         const room = await Room.create({
             roomNo,
             roomType,
-            harga
+            gabungan : roomNo + ' ' + roomType
         })
 
         res.status(200).json(room)
@@ -26,7 +28,7 @@ const getAllRoom = async (req, res) => {
 
 const editRoom = async (req, res) => {
     const id = req.params.id;
-    const { harga } = req.body;
+    const { statusRoom } = req.body;
     try {
         const room = await Room.findByPk(id);
         if (!room) {
@@ -34,7 +36,7 @@ const editRoom = async (req, res) => {
         }
 
         await Room.update({
-            harga : harga
+            statusRoom : statusRoom
         }, {
             where : {id : id}
         })
@@ -58,9 +60,42 @@ const roomOne = async (req, res) => {
     }
 }
 
+const filterRoom = async (req, res) => {
+    const room = req.query.room;
+    try {
+        const roomF = await Reservasi.findAll({
+            where: { room: room },
+            attributes : ['checkin', 'checkout']
+        })
+
+         const roomG = await RoomG.findAll({
+            where: { room: room },
+            attributes : ['arrival', 'departure']
+        })
+        res.status(200).json({roomF, roomG })
+    } catch (error) {
+        res.status(500).json({message : error.message})
+    }
+}
+
+const filterRoomGroup = async (req, res) => {
+    const room = req.query.room;
+    try {
+        const roomF = await RoomG.findAll({
+            where: { room: room },
+            attributes : ['arrival', 'departure']
+        })
+        res.status(200).json(roomF)
+    } catch (error) {
+        res.status(500).json({message : error.message})
+    }
+}
+
 module.exports = {
     createRoom,
     getAllRoom,
     editRoom,
-    roomOne
+    roomOne,
+    filterRoom,
+    filterRoomGroup
 }
