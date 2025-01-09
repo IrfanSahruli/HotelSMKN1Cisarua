@@ -10,6 +10,18 @@ const User = sequelize.define("user", {
     },
     username: {
         type: DataTypes.STRING,
+        allowNull : false
+    },
+    password: {
+        type: DataTypes.STRING,
+         allowNull : false
+    },
+    email: {
+        type: DataTypes.STRING,
+         allowNull : false
+    },
+    no_hp: {
+        type: DataTypes.STRING,
         allowNull: true
     },
     password: {
@@ -27,9 +39,9 @@ const User = sequelize.define("user", {
     role: {
         type: DataTypes.ENUM,
         values: ["user", "kasir", "admin", "super admin", "resepsionis"],
-        allowNull: true
+         allowNull : false
     },
-}, {
+},{
     freezeTableName: true,
     timestamps: true
 });

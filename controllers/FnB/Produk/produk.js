@@ -12,7 +12,6 @@ const createProduk = async (req, res) => {
         hargaJual,
         stok,
         kategori_produk,
-        sub_kategori_produk,
     } = req.body;
 
     try {
@@ -29,8 +28,7 @@ const createProduk = async (req, res) => {
             hargaAwal,
             hargaJual,
             stok,
-            kategori_produk,
-            sub_kategori_produk,
+            kategori_produk
         });
 
         res.status(201).json({
@@ -76,32 +74,6 @@ const getProdukByKategori = async (req, res) => {
         res.status(200).json({
             success: true,
             message: `Produk dengan kategori ${kategori_produk} berhasil diambil`,
-            data: produk,
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// Ambil produk berdasarkan sub kategori
-const getProdukBySubKategori = async (req, res) => {
-    const { sub_kategori_produk } = req.params;
-
-    try {
-        const produk = await Produk.findAll({
-            where: { sub_kategori_produk },
-        });
-
-        if (produk.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: `Tidak ada produk dengan sub kategori ${sub_kategori_produk}`,
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: `Produk dengan sub kategori ${sub_kategori_produk} berhasil diambil`,
             data: produk,
         });
     } catch (error) {
@@ -209,7 +181,7 @@ module.exports = {
     createProduk,
     getAllProduk,
     getProdukByKategori,
-    getProdukBySubKategori,
+    // getProdukBySubKategori,
     getProdukTerbaru,
     updateProduk,
     deleteProduk,

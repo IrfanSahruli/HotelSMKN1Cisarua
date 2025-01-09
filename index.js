@@ -7,10 +7,21 @@ const path = require("path");
 const sequelize = require("./config/database");
 const Routes = require("./routes/routes");
 const User = require("./models/User/users");
+const Detail_Order = require("./models/FnB/Produk/detailOrder");
+const Order = require("./models/FnB/Produk/order");
 const TransaksiLaundry = require("./models/Laundry/Transaksi/transaksiLaundry");
 const Produk = require("./models/FnB/Produk/produk");
 const Bahan = require("./models/Laundry/Transaksi/bahan");
 const TransaksiLaundryBahan = require("./models/Laundry/Transaksi/transaksiLaundryBahan");
+const Room = require("./models/room/room");
+const Reservasi = require("./models/room/reservasi");
+const Registrasi = require("./models/room/inOut");
+const Remarks = require("./models/room/remarks");
+const Makanan = require("./models/room/other");
+const RoomG = require("./models/room/roomG");
+const ReservasiGroup = require("./models/room/reservasiG");
+const DepartureGroup = require("./models/room/departure");
+const ArrivalGroup = require("./models/room/arrival");
 
 dotenv.config();
 const app = express();
@@ -36,6 +47,7 @@ app.use("/api", Routes);
 sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
     // await TransaksiLaundry.sync({ alter: true });
+    // await Registrasi.sync({alter : true});
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

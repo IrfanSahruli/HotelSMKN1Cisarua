@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const protect = (roles = []) => {
     return (req, res, next) => {
-        const token = req.cookies.token || req.headers.authorization?.split(" ")[1]; // Mengambil token dari cookie atau header
+        const token = req.cookies.token;
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'Login dulu guys' });
