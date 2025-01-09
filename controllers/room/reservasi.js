@@ -11,7 +11,6 @@ const ArrivalGroup = require("../../models/room/arrival");
 const DepartureGroup = require("../../models/room/departure");
 const sequelize = require('../../config/database');
 
-const normalizeDate = (date) => new Date(date).toISOString().split("T")[0];
 
 const reservasiHotel = async (req, res) => {
     const { id } = req.user;
@@ -265,44 +264,31 @@ const reservasiGroup2 = async (req, res) => {
             }, { transaction: t });
         }
 
-        // Validasi awal arrival dan departure
-        if (!arrival || arrival.length === 0 || !departure || departure.length === 0) {
-            throw new Error("Data arrival atau departure tidak valid atau kosong");
-        }
-
-        const globalArrival = arrival[0]?.datee;
-        const globalDeparture = departure[0]?.datee;
-
-        // Validasi keberadaan dan format tanggal global
-        if (!globalArrival || !globalDeparture) {
-            throw new Error("Global arrival atau departure date is missing");
-        }
-        if (isNaN(new Date(globalArrival)) || isNaN(new Date(globalDeparture))) {
-            throw new Error("Global arrival atau departure memiliki format tanggal yang tidak valid");
-        }
-
         // Handle roomG
         if (roomG && roomG.length > 0) {
+            const globalArrival = arrival[0]?.datee ? new Date(arrival[0].datee) : null;
+            const globalDeparture = departure[0]?.datee ? new Date(departure[0].datee) : null;
+
+            if (!globalArrival || !globalDeparture) {
+                throw new Error('Global arrival or departure date is missing');
+            }
+
             for (const roomData of roomG) {
-                // Ambil tanggal kedatangan dan keberangkatan, atau gunakan nilai global jika kosong
-                const arrivalDate = roomData.arrival ? new Date(roomData.arrival) : new Date(globalArrival);
-                const departureDate = roomData.departure ? new Date(roomData.departure) : new Date(globalDeparture);
+                let arrivalDate = roomData.arrival ? new Date(roomData.arrival) : globalArrival;
+                let departureDate = roomData.departure ? new Date(roomData.departure) : globalDeparture;
 
-                // Normalisasi hanya tanggal (tanpa waktu)
-                const normalizedArrivalDate = normalizeDate(arrivalDate);
-                const normalizedDepartureDate = normalizeDate(departureDate);
+                // Normalisasi tanggal untuk mengabaikan waktu
+                arrivalDate.setHours(0, 0, 0, 0);
+                departureDate.setHours(0, 0, 0, 0);
 
-                // Validasi kehadiran tanggal
-                if (!normalizedArrivalDate || !normalizedDepartureDate) {
+                if (!arrivalDate || !departureDate) {
                     throw new Error(`Tanggal kedatangan atau keberangkatan hilang untuk kamar: ${roomData.room}`);
                 }
 
-                // Validasi bahwa tanggal keberangkatan lebih besar dari tanggal kedatangan
-                if (new Date(normalizedDepartureDate) <= new Date(normalizedArrivalDate)) {
+                if (departureDate <= arrivalDate) {
                     throw new Error(`Tanggal keberangkatan harus setelah tanggal kedatangan untuk kamar: ${roomData.room}`);
                 }
 
-                // Fungsi untuk memeriksa konflik dengan periode yang sudah ada
                 const checkForConflicts = async (room, arrivalDate, departureDate, transaction) => {
                     const conflictingReservations = await RoomG.findOne({
                         where: {
@@ -330,10 +316,9 @@ const reservasiGroup2 = async (req, res) => {
                     }
                 };
 
-                // Panggil fungsi pengecekan konflik sebelum menyimpan data kamar
-                await checkForConflicts(roomData.room, normalizedArrivalDate, normalizedDepartureDate, t);
+                await checkForConflicts(roomData.room, arrivalDate, departureDate, t);
 
-                // Simpan data kamar setelah validasi berhasil
+                // Simpan data kamar setelah validasi
                 await RoomG.create({
                     id_reservasi: reservasi.id,
                     room: roomData.room,
