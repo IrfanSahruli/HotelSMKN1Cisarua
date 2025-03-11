@@ -22,6 +22,7 @@ const RoomG = require("./models/room/roomG");
 const ReservasiGroup = require("./models/room/reservasiG");
 const DepartureGroup = require("./models/room/departure");
 const ArrivalGroup = require("./models/room/arrival");
+const { reservasiGroup2 } = require("./controllers/room/reservasi");
 
 dotenv.config();
 const app = express();
@@ -48,6 +49,7 @@ sequelize.authenticate().then(async () => {
     console.log("Database berhasil konek");
     // await TransaksiLaundry.sync({ alter: true });
     // await Registrasi.sync({alter : true});
+    // await ArrivalGroup.sync({ alter: true })
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {

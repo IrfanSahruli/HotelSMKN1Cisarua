@@ -6,59 +6,59 @@ const Reservasi = sequelize.define('reservasi', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true 
+        primaryKey: true
     },
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: User,
-            key : 'id'
+            key: 'id'
         }
     },
-    name : {
+    name: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     email: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     phone: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     checkin: {
-        type: DataTypes.DATE,
-        allowNull : false
+        type: DataTypes.DATEONLY,
+        allowNull: false
     },
     checkout: {
-        type: DataTypes.DATE,
-        allowNull : false
+        type: DataTypes.DATEONLY,
+        allowNull: false
     },
     stay: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-     bookedBy: {
+    bookedBy: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     room: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     preferency: {
         type: DataTypes.ENUM('Smoking', 'No Smoking'),
-         allowNull : false
+        allowNull: false
     },
     adult: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     children: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     rate: {
         type: DataTypes.INTEGER,
@@ -71,7 +71,7 @@ const Reservasi = sequelize.define('reservasi', {
     status: {
         type: DataTypes.ENUM('reservasi', 'in', 'out'),
         allowNull: false,
-        defaultValue : 'reservasi'
+        defaultValue: 'reservasi'
     },
     total: {
         type: DataTypes.INTEGER,
@@ -87,14 +87,14 @@ const Reservasi = sequelize.define('reservasi', {
     },
     payment: {
         type: DataTypes.ENUM('cash', 'debit', 'transfer'),
-        allowNull : true
+        allowNull: true
     }
 }, {
-    freezeTableName : true,
-    timestamps : true
+    freezeTableName: true,
+    timestamps: true
 })
 
-User.hasMany(Reservasi, {foreignKey: 'userId'});
+User.hasMany(Reservasi, { foreignKey: 'userId' });
 Reservasi.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = Reservasi;

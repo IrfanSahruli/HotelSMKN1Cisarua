@@ -69,7 +69,7 @@ const RegistrasiPersonal = async (req, res) => {
         const formatExp = moment(exp, "DD-MM-YYYY").format("YYYY-MM-DD");
 
         const inCheck = await CheckinOut.create({
-            userIn : user.username,
+            userIn: user.username,
             id_reservasi,
             id_reservasi_group,
             fullname,
@@ -86,7 +86,7 @@ const RegistrasiPersonal = async (req, res) => {
             paymentmethod,
             cardNo,
             cvv,
-            exp : formatExp,
+            exp: formatExp,
             front_desk,
             formStatusGP
         })
@@ -101,24 +101,24 @@ const RegistrasiPersonal = async (req, res) => {
             }
         }
 
-    if (id_reservasi) {
-       await Reservasi.update(
-        { status: 'in' },
-        { where: { id: id_reservasi } }
-      );
-    }
+        if (id_reservasi) {
+            await Reservasi.update(
+                { status: 'in' },
+                { where: { id: id_reservasi } }
+            );
+        }
 
-    if (id_reservasi_group) {
-        await ReservasiGroup.update(
-            { status: 'in' },
-            { where: { id: id_reservasi_group } }
-        );
-    }
+        if (id_reservasi_group) {
+            await ReservasiGroup.update(
+                { status: 'in' },
+                { where: { id: id_reservasi_group } }
+            );
+        }
 
 
-         res.status(200).json(inCheck);
+        res.status(200).json(inCheck);
     } catch (error) {
-         res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -126,18 +126,19 @@ const getOneForm = async (req, res) => {
     const id = req.params.id;
     try {
         const form = await Reservasi.findOne({
-            where: { id: id }, 
+            where: { id: id },
         })
-         res.status(200).json(form);
+        res.status(200).json(form);
     } catch (error) {
-         res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
 const getReservasi = async (req, res) => {
     try {
         const reservasi = await Reservasi.findAll({
-            where: { status: 'reservasi' }
+            where: { status: 'reservasi' },
+            order: [['createdAt', 'DESC']],
         })
         res.status(200).json(reservasi);
     } catch (error) {
@@ -148,13 +149,14 @@ const getReservasi = async (req, res) => {
 const getReservasiRegistrasi = async (req, res) => {
     try {
         const reservasi = await Reservasi.findAll({
-            where: { status: 'in'},
+            where: { status: 'in' },
             include: [{
                 model: CheckinOut,
                 include: [{
-                    model : Remarks
+                    model: Remarks
                 }]
-            }]
+            }],
+            order: [['createdAt', 'DESC']],
         })
         res.status(200).json(reservasi);
     } catch (error) {
@@ -191,33 +193,33 @@ const getCheckin = async (req, res) => {
             where: { status: 'in' },
             // attributes : ['name', 'checkin', 'checkout', 'roomNo'],
             include: [{
-                model : CheckinOut
+                model: CheckinOut
             }]
         })
-         res.status(200).json(checkin);
+        res.status(200).json(checkin);
     } catch (error) {
-         res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
 const getCheckout = async (req, res) => {
     try {
         const checkout = await Reservasi.findAll({
-            where : {status : 'out'}
+            where: { status: 'out' }
         })
-         res.status(200).json(checkout);
+        res.status(200).json(checkout);
     } catch (error) {
-         res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
 const Total = async (req, res) => {
     try {
         const total = await CheckinOut.sum('total', {
-             where : { formStatus : 'checkout'}
+            where: { formStatus: 'checkout' }
         })
 
-         const checkout = await Reservasi.findAll({
+        const checkout = await Reservasi.findAll({
             where: { status: 'out' },
             include: [
                 {
@@ -225,9 +227,9 @@ const Total = async (req, res) => {
                     attributes: ['total']
                 },
             ]
-         });
+        });
 
-         const checkoutGroup = await ReservasiGroup.findAll({
+        const checkoutGroup = await ReservasiGroup.findAll({
             where: { status: 'out' },
             include: [
                 {
@@ -235,17 +237,17 @@ const Total = async (req, res) => {
                     attributes: ['total']
                 },
                 {
-                   model: ArrivalGroup,
+                    model: ArrivalGroup,
                     attributes: ['datee']
                 },
-                 {
+                {
                     model: DepartureGroup,
                     attributes: ['datee']
                 }
             ]
         });
 
-        res.status(200).json({total, checkout, checkoutGroup});
+        res.status(200).json({ total, checkout, checkoutGroup });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -254,10 +256,10 @@ const Total = async (req, res) => {
 const TotalGroup = async (req, res) => {
     try {
         const total = await CheckinOut.sum('total', {
-             where : { formStatus : 'checkout', formStatusGP : 'Group'}
+            where: { formStatus: 'checkout', formStatusGP: 'Group' }
         })
 
-         const checkout = await ReservasiGroup.findAll({
+        const checkout = await ReservasiGroup.findAll({
             where: { status: 'out' },
             include: [
                 {
@@ -265,184 +267,186 @@ const TotalGroup = async (req, res) => {
                     attributes: ['total']
                 },
                 {
-                   model: ArrivalGroup,
+                    model: ArrivalGroup,
                     attributes: ['datee']
                 },
-                 {
+                {
                     model: DepartureGroup,
                     attributes: ['datee']
                 }
             ]
         });
 
-        res.status(200).json({total, checkout});
+        res.status(200).json({ total, checkout });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
 
 const hapusRservasi = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const reservasi = await Reservasi.findByPk(id)
-    if (!reservasi) {
-      return res.status(404).json({ message: "Reservasi is not found" });
+    const { id } = req.params;
+    try {
+        const reservasi = await Reservasi.findByPk(id)
+        if (!reservasi) {
+            return res.status(404).json({ message: "Reservasi is not found" });
+        }
+        await Reservasi.destroy({ where: { id: id } })
+        res.status(200).json({ message: 'sukses' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
     }
-    await Reservasi.destroy({ where: { id: id } })
-    res.status(200).json({ message: 'sukses' })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
 }
 
 const readyToCheckout = async (req, res) => {
     const { id } = req.params;
     const userid = req.user.id;
     try {
-      
-    const reservasi = await Reservasi.findByPk(id)
-    if (!reservasi) {
-      return res.status(404).json({ message: "Reservasi is not found" });
-        }
-        
-    const idUser = await User.findByPk(userid)
-    if (!idUser) {
-      return res.status(404).json({ message: "user is not found" });
-      }
-    
-        await Reservasi.update({ status: 'out' }, { where: { id: id } })
-        await CheckinOut.update({ formStatus: 'checkout', userOut : idUser.username }, { where: { id_reservasi: id } })
 
-    res.status(200).json({ message: 'sukses' })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
+        const reservasi = await Reservasi.findByPk(id)
+        if (!reservasi) {
+            return res.status(404).json({ message: "Reservasi is not found" });
+        }
+
+        const idUser = await User.findByPk(userid)
+        if (!idUser) {
+            return res.status(404).json({ message: "user is not found" });
+        }
+
+        await Reservasi.update({ status: 'out' }, { where: { id: id } })
+        await CheckinOut.update({ formStatus: 'checkout', userOut: idUser.username }, { where: { id_reservasi: id } })
+
+        res.status(200).json({ message: 'sukses' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 }
 
 const readyToCheckoutGroup = async (req, res) => {
     const { id } = req.params;
     const userid = req.user.id;
     try {
-      
-    const reservasi = await ReservasiGroup.findByPk(id)
-    if (!reservasi) {
-      return res.status(404).json({ message: "Reservasi is not found" });
-        }
-        
-     const idUser = await User.findByPk(userid)
-    if (!idUser) {
-      return res.status(404).json({ message: "user is not found" });
-      }
-    
-        await ReservasiGroup.update({ status: 'out',  }, { where: { id: id } })
-        await CheckinOut.update({ formStatus: 'checkout', userOut : idUser.username }, { where: { id_reservasi_group: id } })
 
-    res.status(200).json({ message: 'sukses' })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
+        const reservasi = await ReservasiGroup.findByPk(id)
+        if (!reservasi) {
+            return res.status(404).json({ message: "Reservasi is not found" });
+        }
+
+        const idUser = await User.findByPk(userid)
+        if (!idUser) {
+            return res.status(404).json({ message: "user is not found" });
+        }
+
+        await ReservasiGroup.update({ status: 'out', }, { where: { id: id } })
+        await CheckinOut.update({ formStatus: 'checkout', userOut: idUser.username }, { where: { id_reservasi_group: id } })
+
+        res.status(200).json({ message: 'sukses' })
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 }
 
 const getReservasiGroup = async (req, res) => {
-        try {
-            const reservasi = await ReservasiGroup.findAll({
-                // where: { status: 'in' },
-                include: [
-                    {
-                        model : Remarks
-                    },
-                    {
-                        model : ArrivalGroup
-                    },
-                    {
-                        model : DepartureGroup
-                    },
-                    {
-                        model : Makanan
-                    }, 
-                    {
-                        model : RoomG
-                    }
-                ]
-            })
-         res.status(200).json(reservasi)
-        } catch (error) {
+    try {
+        const reservasi = await ReservasiGroup.findAll({
+            // where: { status: 'in' },
+            include: [
+                {
+                    model: Remarks
+                },
+                {
+                    model: ArrivalGroup
+                },
+                {
+                    model: DepartureGroup
+                },
+                {
+                    model: Makanan
+                },
+                {
+                    model: RoomG
+                }
+            ]
+        })
+        res.status(200).json(reservasi)
+    } catch (error) {
         res.status(500).json({ message: error.message })
-        }
+    }
 }
 
 const getReservasiGroupIn = async (req, res) => {
-        try {
-            const reservasi = await ReservasiGroup.findAll({
-                where: { status: 'in' },
-                include: [
-                    {
-                        model : Remarks
-                    },
-                    {
-                        model : ArrivalGroup
-                    },
-                    {
-                        model : DepartureGroup
-                    },
-                    {
-                        model : Makanan
-                    }, 
-                    {
-                        model : RoomG
-                    },
-                    {
-                        model : CheckinOut
-                    }
-                ]
-            })
-         res.status(200).json(reservasi)
-        } catch (error) {
+    try {
+        const reservasi = await ReservasiGroup.findAll({
+            where: { status: 'in' },
+            // order: ['createdAt', 'DESC'],
+            include: [
+                {
+                    model: Remarks
+                },
+                {
+                    model: ArrivalGroup
+                },
+                {
+                    model: DepartureGroup
+                },
+                {
+                    model: Makanan
+                },
+                {
+                    model: RoomG
+                },
+                {
+                    model: CheckinOut
+                }
+            ],
+
+        })
+        res.status(200).json(reservasi)
+    } catch (error) {
         res.status(500).json({ message: error.message })
-        }
+    }
 }
 
 const getReservasiGroupOut = async (req, res) => {
-        try {
-            const reservasi = await ReservasiGroup.findAll({
-                where: { status: 'out' },
-                include: [
-                    {
-                        model : Remarks
-                    },
-                    {
-                        model : ArrivalGroup
-                    },
-                    {
-                        model : DepartureGroup
-                    },
-                    {
-                        model : Makanan
-                    }, 
-                    {
-                        model : RoomG
-                    }
-                ]
-            })
-         res.status(200).json(reservasi)
-        } catch (error) {
+    try {
+        const reservasi = await ReservasiGroup.findAll({
+            where: { status: 'out' },
+            include: [
+                {
+                    model: Remarks
+                },
+                {
+                    model: ArrivalGroup
+                },
+                {
+                    model: DepartureGroup
+                },
+                {
+                    model: Makanan
+                },
+                {
+                    model: RoomG
+                }
+            ]
+        })
+        res.status(200).json(reservasi)
+    } catch (error) {
         res.status(500).json({ message: error.message })
-        }
+    }
 }
 
 const hapusReservasiGroup = async (req, res) => {
     const { id } = req.params;
     try {
         const reservasi = await ReservasiGroup.findByPk(id)
-            if (!reservasi) {
+        if (!reservasi) {
             return res.status(404).json({ message: "Reservasi is not found" });
-            }
+        }
         await ReservasiGroup.destroy({ where: { id: id } })
-        await Remarks.destroy({where: { id_reservasi: id }})
-        await ArrivalGroup.destroy({where: { id_reservasi_group: id }})
-        await DepartureGroup.destroy({where: { id_reservasi_group: id }})
-        await Makanan.destroy({where: {id_reservasi_group : id}})
-        await RoomG.destroy({where: {id_reservasi : id}})
+        await Remarks.destroy({ where: { id_reservasi: id } })
+        await ArrivalGroup.destroy({ where: { id_reservasi_group: id } })
+        await DepartureGroup.destroy({ where: { id_reservasi_group: id } })
+        await Makanan.destroy({ where: { id_reservasi_group: id } })
+        await RoomG.destroy({ where: { id_reservasi: id } })
 
         res.status(200).json({ message: 'sukses' })
     } catch (error) {
@@ -455,27 +459,27 @@ const getOneFormGroup = async (req, res) => {
     try {
         const form = await ReservasiGroup.findOne({
             where: { id: id },
-             include: [
-                    {
-                        model : Remarks
-                    },
-                    {
-                        model : ArrivalGroup
-                    },
-                    {
-                        model : DepartureGroup
-                    },
-                    {
-                        model : Makanan
-                    }, 
-                    {
-                        model : RoomG
-                    }
-                ]
+            include: [
+                {
+                    model: Remarks
+                },
+                {
+                    model: ArrivalGroup
+                },
+                {
+                    model: DepartureGroup
+                },
+                {
+                    model: Makanan
+                },
+                {
+                    model: RoomG
+                }
+            ]
         })
-         res.status(200).json(form);
+        res.status(200).json(form);
     } catch (error) {
-         res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 

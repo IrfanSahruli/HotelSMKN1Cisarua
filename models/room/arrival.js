@@ -6,15 +6,15 @@ const ArrivalGroup = sequelize.define('arrivalGroup', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true 
+        primaryKey: true
     },
     datee: {
-        type: DataTypes.DATE,
-        allowNull : false
+        type: DataTypes.DATEONLY,
+        allowNull: false
     },
     flight: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
     time: {
         type: DataTypes.TIME,
@@ -24,15 +24,15 @@ const ArrivalGroup = sequelize.define('arrivalGroup', {
         type: DataTypes.INTEGER,
         references: {
             model: ReservasiGroup,
-            key : 'id'
+            key: 'id'
         }
     },
 }, {
-    freezeTableName : true,
-    timestamps : true
+    freezeTableName: true,
+    timestamps: true
 })
- 
-ReservasiGroup.hasMany(ArrivalGroup, {foreignKey: 'id_reservasi_group'});
+
+ReservasiGroup.hasMany(ArrivalGroup, { foreignKey: 'id_reservasi_group' });
 ArrivalGroup.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
 
 module.exports = ArrivalGroup;

@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.post("/register", protect(["resepsionis", "admin"]), Register);
 router.post("/registeruser", Register);
- //register akun kasir dll di website
+//register akun kasir dll di website
 router.post("/registerKasir", protectApp(["admin"]), Register); //register akun kasir dll di aplikasi
 
 router.post("/login", Login);
