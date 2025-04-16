@@ -28,10 +28,10 @@ dotenv.config();
 const app = express();
 
 app.use(
-    cors({
-        credentials: true,
-        origin: true
-    })
+  cors({
+    credentials: true,
+    origin: true
+  })
 );
 
 app.use(express.json());
@@ -46,12 +46,18 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
+<<<<<<< HEAD
     console.log("Database berhasil konek");
     // await TransaksiLaundry.sync({ alter: true });
     // await Registrasi.sync({alter : true});
     // await ArrivalGroup.sync({ alter: true })
+=======
+  console.log("Database berhasil konek");
+  // await TransaksiLaundry.sync({ alter: true });
+  // await Registrasi.sync({alter : true});
+>>>>>>> e23bdcb858ff1157b4f1f43d1c2cdf6eeb7e00c3
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {
-    console.log(`Server running in port ${process.env.PORT}`);
+  console.log(`Server running in port ${process.env.PORT}`);
 });
