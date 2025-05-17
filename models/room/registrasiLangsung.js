@@ -1,9 +1,9 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
 const Reservasi = require("./reservasi");
-const ReservasiGroup = require("./reservasiG");
+// const ReservasiGroup = require("./reservasiG");
 
-const Registrasi = sequelize.define('registrasi', {
+const RegistrasiLangsung = sequelize.define('registrasiLangsung', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -24,14 +24,14 @@ const Registrasi = sequelize.define('registrasi', {
             key: 'id'
         }
     },
-    id_reservasi_group: {
-        allowNull: true,
-        type: DataTypes.INTEGER,
-        references: {
-            model: ReservasiGroup,
-            key: 'id'
-        }
-    },
+    // id_reservasi_group: {
+    //     allowNull: true,
+    //     type: DataTypes.INTEGER,
+    //     references: {
+    //         model: ReservasiGroup,
+    //         key: 'id'
+    //     }
+    // },
     fullname: {
         type: DataTypes.STRING,
         allowNull: false
@@ -95,39 +95,68 @@ const Registrasi = sequelize.define('registrasi', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    formStatus: {
-        type: DataTypes.ENUM('checkin', 'checkout'),
-        defaultValue: 'checkin'
-    },
-    formStatusGP: {
-        type: DataTypes.ENUM('Group', 'Personal'),
-        allowNull: false
+    status: {
+        type: DataTypes.ENUM('in', 'out'),
+        defaultValue: 'in'
     },
     nationality: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     birth: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     loyalNumber: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     loyalLevel: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
+    adult: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    children: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    // rate: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: false,
+    // },
+    // room: {
+    //     type: DataTypes.STRING,
+    //     allowNull: false
+    // },
+    stay: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    checkin: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    checkout: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    statusBill: {
+        type: DataTypes.ENUM('selesai', 'belum'),
+        allowNull: false,
+        defaultValue: 'belum'
+    }
 }, {
     freezeTableName: true,
     timestamps: true
 })
 
-Reservasi.hasMany(Registrasi, { foreignKey: 'id_reservasi' });
-Registrasi.belongsTo(Reservasi, { foreignKey: 'id_reservasi' });
+Reservasi.hasMany(RegistrasiLangsung, { foreignKey: 'id_reservasi' });
+RegistrasiLangsung.belongsTo(Reservasi, { foreignKey: 'id_reservasi' });
 
-ReservasiGroup.hasMany(Registrasi, { foreignKey: 'id_reservasi_group' });
-Registrasi.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
+// ReservasiGroup.hasMany(RegistrasiLangsung, { foreignKey: 'id_reservasi_group' });
+// RegistrasiLangsung.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
 
-module.exports = Registrasi;
+module.exports = RegistrasiLangsung;

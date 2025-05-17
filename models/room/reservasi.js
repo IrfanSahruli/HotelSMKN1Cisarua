@@ -1,4 +1,4 @@
-const { DataTypes, ENUM } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
 const User = require("../User/users");
 
@@ -24,6 +24,10 @@ const Reservasi = sequelize.define('reservasi', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     phone: {
         type: DataTypes.STRING,
         allowNull: false
@@ -44,10 +48,6 @@ const Reservasi = sequelize.define('reservasi', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    room: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     preferency: {
         type: DataTypes.ENUM('Smoking', 'No Smoking'),
         allowNull: false
@@ -60,10 +60,10 @@ const Reservasi = sequelize.define('reservasi', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    rate: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
+    // rate: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: false,
+    // },
     total: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -88,7 +88,7 @@ const Reservasi = sequelize.define('reservasi', {
     payment: {
         type: DataTypes.ENUM('cash', 'debit', 'transfer'),
         allowNull: true
-    }
+    },
 }, {
     freezeTableName: true,
     timestamps: true

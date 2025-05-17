@@ -1,18 +1,26 @@
 const { DataTypes, ENUM } = require("sequelize");
 const sequelize = require("../../config/database");
-const User = require("../User/users");
+// const User = require("../User/users");
+const ReservasiGroup = require("./reservasiG");
 
-const ReservasiGroup = sequelize.define('reservasiGroup', {
+const RegistrasiGroup = sequelize.define('registrasiGroup', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    userId: {
+    userIn: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    userOut: {
+        type: DataTypes.STRING,
+    },
+    id_reservasi_group: {
+        allowNull: true,
         type: DataTypes.INTEGER,
-        allowNull: false,
         references: {
-            model: User,
+            model: ReservasiGroup,
             key: 'id'
         }
     },
@@ -81,9 +89,9 @@ const ReservasiGroup = sequelize.define('reservasiGroup', {
         allowNull: true,
     },
     status: {
-        type: DataTypes.ENUM('reservasi', 'in', 'out'),
+        type: DataTypes.ENUM('in', 'out'),
         allowNull: false,
-        defaultValue: 'reservasi'
+        defaultValue: 'in'
     },
     rack: {
         type: DataTypes.STRING,
@@ -97,7 +105,7 @@ const ReservasiGroup = sequelize.define('reservasiGroup', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    entered_by: {
+    front_desk: {
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -109,12 +117,17 @@ const ReservasiGroup = sequelize.define('reservasiGroup', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    statusBill: {
+        type: DataTypes.ENUM('selesai', 'belum'),
+        allowNull: false,
+        defaultValue: 'belum'
+    }
 }, {
     freezeTableName: true,
     timestamps: true
 })
 
-User.hasMany(ReservasiGroup, { foreignKey: 'userId' });
-ReservasiGroup.belongsTo(User, { foreignKey: 'userId' });
+ReservasiGroup.hasMany(RegistrasiGroup, { foreignKey: 'id_reservasi_group' });
+RegistrasiGroup.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
 
-module.exports = ReservasiGroup;
+module.exports = RegistrasiGroup;

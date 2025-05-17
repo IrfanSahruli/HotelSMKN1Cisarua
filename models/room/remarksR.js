@@ -3,8 +3,10 @@ const sequelize = require("../../config/database");
 const Reservasi = require("./reservasi");
 // const Registrasi = require("./inOut");
 const ReservasiGroup = require("./reservasiG");
+const RegistrasiLangsung = require("./registrasiLangsung");
+const RegistrasiGroup = require("./registrasiGLangsung");
 
-const Remarks = sequelize.define('remarks', {
+const RemarksR = sequelize.define('remarksR', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -18,19 +20,19 @@ const Remarks = sequelize.define('remarks', {
     //         key: 'id'
     //     }
     // },
-    id_reservasi: {
+    id_registrasi: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: ReservasiGroup,
+            model: RegistrasiGroup,
             key: 'id'
         }
     },
-    id_reservasiP: {
+    id_registrasiP: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: Reservasi,
+            model: RegistrasiLangsung,
             key: 'id'
         }
     },
@@ -43,13 +45,13 @@ const Remarks = sequelize.define('remarks', {
     timestamps: true
 })
 
-// Registrasi.hasMany(Remarks, { foreignKey: 'id_registrasi' });
-// Remarks.belongsTo(Registrasi, { foreignKey: 'id_registrasi' });
+// Registrasi.hasMany(RemarksR, { foreignKey: 'id_registrasi' });
+// RemarksR.belongsTo(Registrasi, { foreignKey: 'id_registrasi' });
 
-ReservasiGroup.hasMany(Remarks, { foreignKey: 'id_reservasi', as: 'reservasi' });
-Remarks.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi' });
+RegistrasiGroup.hasMany(RemarksR, { foreignKey: 'id_registrasi', as: 'regis' });
+RemarksR.belongsTo(RegistrasiGroup, { foreignKey: 'id_registrasi' });
 
-Reservasi.hasMany(Remarks, { foreignKey: 'id_reservasiP', as: 'reservasiP' });
-Remarks.belongsTo(Reservasi, { foreignKey: 'id_reservasiP' });
+RegistrasiLangsung.hasMany(RemarksR, { foreignKey: 'id_registrasiP', as: 'regisP' });
+RemarksR.belongsTo(RegistrasiLangsung, { foreignKey: 'id_registrasiP' });
 
-module.exports = Remarks;
+module.exports = RemarksR;

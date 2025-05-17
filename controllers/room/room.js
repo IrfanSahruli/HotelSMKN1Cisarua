@@ -1,3 +1,4 @@
+const RoomData = require("../../models/room/dataRoom");
 const Reservasi = require("../../models/room/reservasi");
 const Room = require("../../models/room/room");
 const RoomG = require("../../models/room/roomG");
@@ -5,24 +6,24 @@ const RoomG = require("../../models/room/roomG");
 const createRoom = async (req, res) => {
     const { roomNo, roomType } = req.body;
     try {
-        const room = await Room.create({
+        const room = await RoomData.create({
             roomNo,
             roomType,
-            gabungan : roomNo + ' ' + roomType
+            gabungan: roomNo + ' ' + roomType
         })
 
         res.status(200).json(room)
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
 }
 
 const getAllRoom = async (req, res) => {
     try {
-        const room = await Room.findAll()
+        const room = await RoomData.findAll()
         res.status(200).json(room)
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -30,33 +31,33 @@ const editRoom = async (req, res) => {
     const id = req.params.id;
     const { statusRoom } = req.body;
     try {
-        const room = await Room.findByPk(id);
+        const room = await RoomData.findByPk(id);
         if (!room) {
-            return res.status(400).json({message : 'room tidak ditemukan'})
+            return res.status(400).json({ message: 'room tidak ditemukan' })
         }
 
-        await Room.update({
-            statusRoom : statusRoom
+        await RoomData.update({
+            statusRoom: statusRoom
         }, {
-            where : {id : id}
+            where: { id: id }
         })
 
-        const roomUpdate = await Room.findByPk(id);
+        const roomUpdate = await RoomData.findByPk(id);
         res.status(200).json(roomUpdate)
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
-} 
-    
+}
+
 const roomOne = async (req, res) => {
     const id = req.params.id;
     try {
-        const room = await Room.findOne({
-            where : {id : id}
+        const room = await RoomData.findOne({
+            where: { id: id }
         })
         res.status(200).json(room)
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -65,16 +66,16 @@ const filterRoom = async (req, res) => {
     try {
         const roomF = await Reservasi.findAll({
             where: { room: room },
-            attributes : ['checkin', 'checkout']
+            attributes: ['checkin', 'checkout']
         })
 
-         const roomG = await RoomG.findAll({
+        const roomG = await RoomG.findAll({
             where: { room: room },
-            attributes : ['arrival', 'departure']
+            attributes: ['arrival', 'departure']
         })
-        res.status(200).json({roomF, roomG })
+        res.status(200).json({ roomF, roomG })
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -83,11 +84,11 @@ const filterRoomGroup = async (req, res) => {
     try {
         const roomF = await RoomG.findAll({
             where: { room: room },
-            attributes : ['arrival', 'departure']
+            attributes: ['arrival', 'departure']
         })
         res.status(200).json(roomF)
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
 }
 

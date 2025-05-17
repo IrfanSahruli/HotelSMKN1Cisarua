@@ -1,6 +1,7 @@
 const { DataTypes, ENUM } = require("sequelize");
 const sequelize = require("../../config/database");
 const ReservasiGroup = require("./reservasiG");
+const RegistrasiGroup = require("./registrasiGLangsung");
 
 const DepartureGroup = sequelize.define('DepartureGroup', {
     id: {
@@ -27,12 +28,22 @@ const DepartureGroup = sequelize.define('DepartureGroup', {
             key: 'id'
         }
     },
+    id_registrasi: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: RegistrasiGroup,
+            key: 'id'
+        }
+    },
 }, {
     freezeTableName: true,
     timestamps: true
 })
 
-ReservasiGroup.hasMany(DepartureGroup, { foreignKey: 'id_reservasi_group' });
+ReservasiGroup.hasMany(DepartureGroup, { foreignKey: 'id_reservasi_group', as: 'departureReservasi' });
 DepartureGroup.belongsTo(ReservasiGroup, { foreignKey: 'id_reservasi_group' });
+
+RegistrasiGroup.hasMany(DepartureGroup, { foreignKey: 'id_registrasi', as: 'departureRegistrasi' });
+DepartureGroup.belongsTo(RegistrasiGroup, { foreignKey: 'id_registrasi' });
 
 module.exports = DepartureGroup;

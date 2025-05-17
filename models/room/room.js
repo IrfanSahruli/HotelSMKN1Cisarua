@@ -1,31 +1,68 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
+// const ReservasiGroup = require("./reservasiG");
+// const Reservasi = require("./reservasi");
+const RegistrasiLangsung = require("./registrasiLangsung");
+const RegistrasiGroup = require("./registrasiGLangsung");
 
-const Room = sequelize.define('room', {
-     id: {
+const RoomR = sequelize.define('roomR', {
+    id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true 
+        primaryKey: true
     },
-    roomNo: {
+    id_registrasi: {
         type: DataTypes.INTEGER,
-        allowNull : false
+        references: {
+            model: RegistrasiGroup,
+            key: 'id'
+        }
     },
-    roomType: {
+    id_registrasiP: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: RegistrasiLangsung,
+            key: 'id'
+        }
+    },
+    room: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false
     },
-    statusRoom: {
-        type: DataTypes.ENUM('VR', 'VD', 'OD', 'OC'),
-        defaultValue : 'VR'
+    rate: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
-    gabungan: {
-        type: DataTypes.STRING,
-        allowNull : false
-    }
+    stay: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    sub_total: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    arrival: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    departure: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    status: {
+        type: DataTypes.ENUM('in', 'out'),
+        allowNull: false,
+        defaultValue: 'in'
+    },
 }, {
-    freezeTableName : true,
-    timestamps : true
+    freezeTableName: true,
+    timestamps: true
 })
 
-module.exports = Room;
+RegistrasiGroup.hasMany(RoomR, { foreignKey: 'id_registrasi' });
+RoomR.belongsTo(RegistrasiGroup, { foreignKey: 'id_registrasi' });
+
+RegistrasiLangsung.hasMany(RoomR, { foreignKey: 'id_registrasiP' });
+RoomR.belongsTo(RegistrasiLangsung, { foreignKey: 'id_registrasiP' });
+
+module.exports = RoomR;

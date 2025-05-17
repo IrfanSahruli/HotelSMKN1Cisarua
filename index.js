@@ -22,7 +22,14 @@ const RoomG = require("./models/room/roomG");
 const ReservasiGroup = require("./models/room/reservasiG");
 const DepartureGroup = require("./models/room/departure");
 const ArrivalGroup = require("./models/room/arrival");
-const { reservasiGroup2 } = require("./controllers/room/reservasi");
+const RegistrasiLangsung = require("./models/room/registrasiLangsung");
+const RegistrasiGroup = require("./models/room/registrasiGLangsung");
+const RemarksR = require("./models/room/remarksR");
+const RoomData = require("./models/room/dataRoom");
+const RoomR = require("./models/room/room");
+const MakananR = require("./models/room/makananR");
+const Bill = require("./models/room/bill");
+// const { reservasiGroup2 } = require("./controllers/room/reservasi");
 
 dotenv.config();
 const app = express();
@@ -46,13 +53,13 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api", Routes);
 
 sequelize.authenticate().then(async () => {
-  console.log("Database berhasil konek");
-  await TransaksiLaundry.sync({ alter: true });
-  await Registrasi.sync({ alter: true });
-  // await ArrivalGroup.sync({ alter: true })
-  console.log("Database berhasil konek");
+  // console.log("Database berhasil konek");
   // await TransaksiLaundry.sync({ alter: true });
-  // await Registrasi.sync({alter : true});
+  // await Reservasi.sync({ alter: true });
+  // await DepartureGroup.sync({ alter: true })
+  // console.log("Database berhasil konek");
+  // await RemarksR.sync({ alter: true });
+  // await RegistrasiLangsung.sync({ alter: true });
 }).catch(err => console.log(`Error: ${err}`));
 
 app.listen(process.env.PORT, () => {
