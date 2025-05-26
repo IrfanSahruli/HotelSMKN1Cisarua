@@ -12,7 +12,6 @@ const DepartureGroup = require("../../models/room/departure");
 const sequelize = require('../../config/database');
 const RoomR = require("../../models/room/room");
 
-
 const reservasiHotel = async (req, res) => {
     const { id } = req.user;
     const {
@@ -27,7 +26,6 @@ const reservasiHotel = async (req, res) => {
         preferency,
         children,
         adult,
-        // rate,
         total,
         down,
         remaining,
@@ -35,47 +33,41 @@ const reservasiHotel = async (req, res) => {
         address,
         remarks
     } = req.body;
+
+    const t = await sequelize.transaction();
+
     try {
-
-        // const resepsionis = await User.findByPk(id);
-
-        // const tanggalIn = moment(checkin, "HH-MM-TTTT").format('TTTT-MM-HH');
-        // const tanggalOut = moment(checkout, "HH-MM-TTTT").format('TTTT-MM-HH');
-
         const reservasi = await Reservasi.create({
             userId: id,
             name,
             email,
             phone,
-            checkin, //: formattedCheckin,
-            checkout, //: formattedCheckout,
+            checkin,
+            checkout,
             stay,
             bookedBy,
-            // room,
             preferency,
             children,
             adult,
-            // rate,
             total,
             down,
             remaining,
             payment,
             address
-        });
+        }, { transaction: t });
 
-        if (remarks) {
-            for (let index = 0; index < remarks.length; index++) {
-                const { detail } = remarks[index];
+        if (remarks && remarks.length > 0) {
+            for (const { detail } of remarks) {
                 await Remarks.create({
                     id_reservasiP: reservasi.id,
                     detail,
-                });
+                }, { transaction: t });
             }
         }
 
         if (roomG && roomG.length > 0) {
             const globalArrival = reservasi.checkin ? new Date(reservasi.checkin) : null;
-            const globalDeparture = reservasi?.checkout ? new Date(reservasi.checkout) : null;
+            const globalDeparture = reservasi.checkout ? new Date(reservasi.checkout) : null;
 
             if (!globalArrival || !globalDeparture) {
                 throw new Error('Global arrival or departure date is missing');
@@ -85,72 +77,57 @@ const reservasiHotel = async (req, res) => {
                 let arrivalDate = roomData.checkin ? new Date(roomData.checkin) : globalArrival;
                 let departureDate = roomData.checkout ? new Date(roomData.checkout) : globalDeparture;
 
-                // Normalisasi tanggal untuk mengabaikan waktu
                 arrivalDate.setHours(0, 0, 0, 0);
                 departureDate.setHours(0, 0, 0, 0);
 
                 if (!arrivalDate || !departureDate) {
-                    throw new Error(`Tanggal kedatangan atau keberangkatan hilang untuk kamar: ${roomData.room}`);
+                    throw new Error(`Arrival or departure date missing for room: ${roomData.room}`);
                 }
 
                 if (departureDate <= arrivalDate) {
-                    throw new Error(`Tanggal keberangkatan harus setelah tanggal kedatangan untuk kamar: ${roomData.room}`);
+                    throw new Error(`Departure date must be after arrival date for room: ${roomData.room}`);
                 }
 
-                const checkForConflicts = async (room, arrivalDate, departureDate) => {
-                    const conflictingReservations = await RoomG.findOne({
-                        where: {
-                            room,
-                            status: 'reservasi',
-                            [Op.or]: [
-                                {
-                                    arrival: { [Op.between]: [arrivalDate, departureDate] },
-                                },
-                                {
-                                    departure: { [Op.between]: [arrivalDate, departureDate] },
-                                },
-                                {
-                                    [Op.and]: [
-                                        { arrival: { [Op.lte]: arrivalDate } },
-                                        { departure: { [Op.gte]: departureDate } },
-                                    ],
-                                },
-                            ],
-                        },
-                        // transaction,
-                    });
+                const conflictingRoomG = await RoomG.findOne({
+                    where: {
+                        room: roomData.room,
+                        status: 'reservasi',
+                        [Op.or]: [
+                            { arrival: { [Op.between]: [arrivalDate, departureDate] } },
+                            { departure: { [Op.between]: [arrivalDate, departureDate] } },
+                            {
+                                [Op.and]: [
+                                    { arrival: { [Op.lte]: arrivalDate } },
+                                    { departure: { [Op.gte]: departureDate } },
+                                ]
+                            }
+                        ],
+                    },
+                    transaction: t
+                });
 
-                    const conflictingReservations2 = await RoomR.findOne({
-                        where: {
-                            room,
-                            status: 'in',
-                            [Op.or]: [
-                                {
-                                    arrival: { [Op.between]: [arrivalDate, departureDate] },
-                                },
-                                {
-                                    departure: { [Op.between]: [arrivalDate, departureDate] },
-                                },
-                                {
-                                    [Op.and]: [
-                                        { arrival: { [Op.lte]: arrivalDate } },
-                                        { departure: { [Op.gte]: departureDate } },
-                                    ],
-                                },
-                            ],
-                        },
-                        // transaction,
-                    });
+                const conflictingRoomR = await RoomR.findOne({
+                    where: {
+                        room: roomData.room,
+                        status: 'in',
+                        [Op.or]: [
+                            { arrival: { [Op.between]: [arrivalDate, departureDate] } },
+                            { departure: { [Op.between]: [arrivalDate, departureDate] } },
+                            {
+                                [Op.and]: [
+                                    { arrival: { [Op.lte]: arrivalDate } },
+                                    { departure: { [Op.gte]: departureDate } },
+                                ]
+                            }
+                        ],
+                    },
+                    transaction: t
+                });
 
-                    if (conflictingReservations || conflictingReservations2) {
-                        throw new Error(`Kamar ${room} sudah dipesan atau digunakan pada periode yang diminta.`);
-                    }
-                };
+                if (conflictingRoomG || conflictingRoomR) {
+                    throw new Error(`Room ${roomData.room} is already booked or occupied during the selected period.`);
+                }
 
-
-                await checkForConflicts(roomData.room, arrivalDate, departureDate);
-
-                // Simpan data kamar setelah validasi
                 await RoomG.create({
                     id_reservasiP: reservasi.id,
                     room: roomData.room,
@@ -159,29 +136,14 @@ const reservasiHotel = async (req, res) => {
                     sub_total: roomData.sub_total,
                     arrival: arrivalDate,
                     departure: departureDate,
-                });
+                }, { transaction: t });
             }
         }
-        // const harga_permalam = noRoom.harga;
-        // const jamIn = new Date(checkin);
-        // const jamOut = new Date(checkout);
-        // const totalMalam = Math.ceil((jamOut - jamIn) / (1000 * 60 * 60 * 24));
 
-        // const totalPermalam = totalMalam * harga_permalam;
-        // const jumlahSemua = totalPermalam + jumlahTotal;
-
-        // console.log(jumlahTotal);
-        // console.log(totalPermalam);
-
-
-        // await reservasi.update({
-        //     subTotalRemarks: jumlahTotal,
-        //     subTotalRoom: totalPermalam,
-        //     total: jumlahSemua
-        // });
-
-        res.status(200).json(reservasi);
+        await t.commit();
+        res.status(201).json({ message: "Reservation successfully created", data: reservasi });
     } catch (error) {
+        await t.rollback();
         res.status(500).json({ message: error.message });
     }
 };
@@ -346,39 +308,13 @@ const editReservasiHotel = async (req, res) => {
     }
 };
 
-
 const reservasiGroup2 = async (req, res) => {
     const { id } = req.user;
     const {
-        phone,
-        email,
-        name,
-        name_of_travel,
-        orCompany,
-        address,
-        contact,
-        // deposit,
-        clrek,
-        dateC,
-        followup,
-        romming,
-        metodeBooking,
-        // back_lip,
-        rack,
-        initialDate,
-        charter,
-        entered_by,
-        makanan,
-        roomG,
-        remarks,
-        departure,
-        arrival,
-        total,
-        children,
-        adult,
-        payment,
-        down,
-        remaining
+        phone, email, name, name_of_travel, orCompany, address, contact,
+        clrek, dateC, followup, romming, metodeBooking, rack, initialDate,
+        charter, entered_by, makanan, roomG, remarks, departure, arrival,
+        total, children, adult, payment, down, remaining
     } = req.body;
 
     const t = await sequelize.transaction();
@@ -386,36 +322,13 @@ const reservasiGroup2 = async (req, res) => {
     try {
         const reservasi = await ReservasiGroup.create({
             userId: id,
-            name,
-            phone,
-            email,
-            name_of_travel,
-            orCompany,
-            address,
-            contact,
-            // deposit,
-            clrek,
-            dateC,
-            followup,
-            romming,
-            metodeBooking,
-            rack,
-            initialDate,
-            // back_lip,
-            charter,
-            entered_by,
-            total,
-            payment,
-            adult,
-            children,
-            down,
-            remaining
+            name, phone, email, name_of_travel, orCompany, address, contact,
+            clrek, dateC, followup, romming, metodeBooking, rack, initialDate,
+            charter, entered_by, total, payment, adult, children, down, remaining
         }, { transaction: t });
 
-        // Handle remarks
         if (remarks && remarks.length > 0) {
-            for (let index = 0; index < remarks.length; index++) {
-                const { detail } = remarks[index];
+            for (const { detail } of remarks) {
                 await Remarks.create({
                     id_reservasi: reservasi.id,
                     detail
@@ -423,125 +336,100 @@ const reservasiGroup2 = async (req, res) => {
             }
         }
 
-        // Handle makanan
         if (makanan && makanan.length > 0) {
-            for (let index = 0; index < makanan.length; index++) {
-                const { meal, tours, account } = makanan[index];
+            for (const { meal, tours, account } of makanan) {
                 await Makanan.create({
                     id_reservasi_group: reservasi.id,
-                    meal,
-                    tours,
-                    account
+                    meal, tours, account
                 }, { transaction: t });
             }
         }
 
-        // Handle arrival
         if (!arrival || arrival.length === 0) {
-            throw new Error('Arrival dates are required');
+            throw new Error('Arrival data is required.');
         }
-        for (let index = 0; index < arrival.length; index++) {
-            const { datee, flight, time } = arrival[index];
+
+        for (const { datee, flight, time } of arrival) {
             await ArrivalGroup.create({
                 id_reservasi_group: reservasi.id,
-                datee,
-                flight,
-                time
+                datee, flight, time
             }, { transaction: t });
         }
 
-        // Handle departure
         if (!departure || departure.length === 0) {
-            throw new Error('Departure dates are required');
+            throw new Error('Departure data is required.');
         }
-        for (let index = 0; index < departure.length; index++) {
-            const { datee, flight, time } = departure[index];
+
+        for (const { datee, flight, time } of departure) {
             await DepartureGroup.create({
                 id_reservasi_group: reservasi.id,
-                datee,
-                flight,
-                time
+                datee, flight, time
             }, { transaction: t });
         }
 
-        // Handle roomG
         if (roomG && roomG.length > 0) {
             const globalArrival = arrival[0]?.datee ? new Date(arrival[0].datee) : null;
             const globalDeparture = departure[0]?.datee ? new Date(departure[0].datee) : null;
 
             if (!globalArrival || !globalDeparture) {
-                throw new Error('Global arrival or departure date is missing');
+                throw new Error('Global arrival or departure date is missing.');
             }
 
             for (const roomData of roomG) {
                 let arrivalDate = roomData.arrival ? new Date(roomData.arrival) : globalArrival;
                 let departureDate = roomData.departure ? new Date(roomData.departure) : globalDeparture;
 
-                // Normalisasi tanggal untuk mengabaikan waktu
                 arrivalDate.setHours(0, 0, 0, 0);
                 departureDate.setHours(0, 0, 0, 0);
 
-                if (!arrivalDate || !departureDate) {
-                    throw new Error(`Tanggal kedatangan atau keberangkatan hilang untuk kamar: ${roomData.room}`);
-                }
-
                 if (departureDate <= arrivalDate) {
-                    throw new Error(`Tanggal keberangkatan harus setelah tanggal kedatangan untuk kamar: ${roomData.room}`);
+                    throw new Error(`Departure must be after arrival for room: ${roomData.room}`);
                 }
 
                 const checkForConflicts = async (room, arrivalDate, departureDate, transaction) => {
-                    const conflictingReservations = await RoomG.findOne({
+                    const conflict1 = await RoomG.findOne({
                         where: {
                             room,
                             status: 'reservasi',
                             [Op.or]: [
-                                {
-                                    arrival: { [Op.between]: [arrivalDate, departureDate] },
-                                },
-                                {
-                                    departure: { [Op.between]: [arrivalDate, departureDate] },
-                                },
+                                { arrival: { [Op.between]: [arrivalDate, departureDate] } },
+                                { departure: { [Op.between]: [arrivalDate, departureDate] } },
                                 {
                                     [Op.and]: [
                                         { arrival: { [Op.lte]: arrivalDate } },
                                         { departure: { [Op.gte]: departureDate } },
-                                    ],
-                                },
-                            ],
+                                    ]
+                                }
+                            ]
                         },
-                        transaction,
+                        transaction
                     });
 
-                    const conflictingReservations2 = await RoomR.findOne({
+                    const conflict2 = await RoomR.findOne({
                         where: {
                             room,
                             status: 'in',
                             [Op.or]: [
-                                {
-                                    arrival: { [Op.between]: [arrivalDate, departureDate] },
-                                },
-                                {
-                                    departure: { [Op.between]: [arrivalDate, departureDate] },
-                                },
+                                { arrival: { [Op.between]: [arrivalDate, departureDate] } },
+                                { departure: { [Op.between]: [arrivalDate, departureDate] } },
                                 {
                                     [Op.and]: [
                                         { arrival: { [Op.lte]: arrivalDate } },
                                         { departure: { [Op.gte]: departureDate } },
-                                    ],
-                                },
-                            ],
+                                    ]
+                                }
+                            ]
                         },
-                        transaction,
+                        transaction
                     });
 
-                    if (conflictingReservations || conflictingReservations2) {
-                        throw new Error(`Kamar ${room} sudah dipesan pada periode yang diminta.`);
+                    if (conflict1 || conflict2) {
+                        throw new Error(`Room ${room} is already booked or occupied during the selected period.`);
                     }
                 };
 
                 await checkForConflicts(roomData.room, arrivalDate, departureDate, t);
 
-                // Simpan data kamar setelah validasi
                 await RoomG.create({
                     id_reservasi: reservasi.id,
                     room: roomData.room,
@@ -549,18 +437,22 @@ const reservasiGroup2 = async (req, res) => {
                     stay: roomData.stay,
                     sub_total: roomData.sub_total,
                     arrival: arrivalDate,
-                    departure: departureDate,
+                    departure: departureDate
                 }, { transaction: t });
             }
         }
 
         await t.commit();
-        res.status(201).json({ message: 'Reservasi created successfully', reservasi });
+        res.status(201).json({
+            message: 'Group reservation created successfully.',
+            data: reservasi
+        });
     } catch (error) {
         await t.rollback();
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message || 'Something went wrong.' });
     }
 };
+
 
 const editreservasiGroup = async (req, res) => {
     const { id } = req.params;

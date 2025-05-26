@@ -6,7 +6,8 @@ const {
     getAllUsers,
     getUsersByRole,
     updateUserById,
-    deleteUser
+    deleteUser,
+    getResepsionisCompare
 } = require("../../controllers/User/users");
 const protect = require("../../middlewares/auth");
 const protectApp = require("../../middlewares/authapp");
@@ -20,6 +21,7 @@ router.post("/registerKasir", protectApp(["admin"]), Register); //register akun 
 
 router.post("/login", Login);
 router.get("/users", getAllUsers); //get users
+router.get("/usersCompare", getResepsionisCompare);
 router.get("/users/:role", protect(["admin"]), getUsersByRole); //get akun berdasarkan role
 router.put("/users/:id", protect(["admin"]), updateUserById); //update akun berdasarkan role & id
 router.delete("/users/:id", protect(["admin"]), deleteUser); //delete users (termasuk kasir)

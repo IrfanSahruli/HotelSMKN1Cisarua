@@ -194,6 +194,43 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const getResepsionisCompare = async (req, res) => {
+    const { role, password } = req.query;
+
+    if (password !== process.env.CATEGORY_ACCESS_PASSWORD) {
+        return res.status(401).json({ success: false, message: 'Invalid password' });
+    }
+
+    try {
+        const users = await User.findAll({ where: { role: role } });
+        const result = [];
+
+        for (const user of users) {
+            const isMatch = await bcrypt.compare(user.password, user.password);
+
+            result.push({
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                no_hp: user.no_hp,
+                password_match: isMatch
+            });
+        }
+
+        res.status(200).json({
+            status_code: 200,
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        res.status(500).json({
+            status_code: 500,
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     Register,
     Login,
@@ -201,5 +238,6 @@ module.exports = {
     getAllUsers,
     getUsersByRole,
     updateUserById,
+    getResepsionisCompare,
     deleteUser
 };

@@ -1114,7 +1114,7 @@ const getReservasiRegistrasi = async (req, res) => {
 const getRegistrasi = async (req, res) => {
     try {
         const reservasi = await RegistrasiLangsung.findAll({
-            // where: { status: 'in' },
+            where: { status: 'in' },
             include: [{
                 model: Reservasi,
                 include: [{
