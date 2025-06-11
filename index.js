@@ -29,6 +29,7 @@ const RoomData = require("./models/room/dataRoom");
 const RoomR = require("./models/room/room");
 const MakananR = require("./models/room/makananR");
 const Bill = require("./models/room/bill");
+const Pengeluaran = require('./models/FnB/Pengeluaran/pengeluaran');
 // const { reservasiGroup2 } = require("./controllers/room/reservasi");
 
 dotenv.config();

@@ -20,5 +20,7 @@ router.use("/", require("./Laundry/Laporan/pendapatan"));
 //Produk FnB
 router.use("/", require("./FnB/Produk/produk"));
 router.use("/", require("./FnB/Produk/order"))
+//Fnb Pengeluaran
+router.use('/', require('./FnB/Pengeluaran/pengeluaran'));
 
 module.exports = router;
