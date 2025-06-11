@@ -55,7 +55,7 @@ const getPengeluaranPerhari = async (req, res) => {
         });
 
         const total = data.reduce((sum, item) => {
-            return sum + (item.harga * parseInt(item.jumlah));
+            return sum + item.harga;
         }, 0);
 
         res.status(200).json({ tanggal: tanggalHariIni, total, data });
@@ -79,7 +79,7 @@ const getPengeluaranPerMinggu = async (req, res) => {
             }
         });
 
-        const total = data.reduce((sum, item) => sum + (item.harga * parseInt(item.jumlah)), 0);
+        const total = data.reduce((sum, item) => sum + item.harga, 0);
 
         res.status(200).json({
             minggu: `${formatDate(mingguAwal)} - ${formatDate(mingguAkhir)}`,
@@ -108,7 +108,7 @@ const getPengeluaranPerBulan = async (req, res) => {
             }
         });
 
-        const total = data.reduce((sum, item) => sum + (item.harga * parseInt(item.jumlah)), 0);
+        const total = data.reduce((sum, item) => sum + item.harga, 0);
 
         res.status(200).json({
             bulan: `${tahun}-${(bulan + 1).toString().padStart(2, '0')}`,
@@ -135,7 +135,7 @@ const getPengeluaranPerTahun = async (req, res) => {
             }
         });
 
-        const total = data.reduce((sum, item) => sum + (item.harga * parseInt(item.jumlah)), 0);
+        const total = data.reduce((sum, item) => sum + item.harga, 0);
 
         res.status(200).json({
             tahun,
