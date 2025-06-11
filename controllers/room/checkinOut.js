@@ -173,7 +173,7 @@ const RegistrasiPersonal = async (req, res) => {
         await t.commit();
         res.status(200).json(inCheck);
     } catch (error) {
-        if (t) await t.rollback();
+        await t.rollback();
         res.status(500).json({ message: error.message });
     }
 };

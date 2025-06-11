@@ -62,7 +62,6 @@ const Login = async (req, res) => {
             process.env.SECRET_KEY // No expiration time
         );
 
-        // Set token akses tanpa refresh token
         res.cookie('token', token, { httpOnly: true, sameSite: "None", secure: true, path: "/" });
 
         res.status(200).json({ message: 'Login successful', user, token: token });
@@ -182,7 +181,7 @@ const deleteUser = async (req, res) => {
         const user = await User.findByPk(id);
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status().json({ success: false, message: 'User not found' });
         }
 
         // Hapus user dari database
