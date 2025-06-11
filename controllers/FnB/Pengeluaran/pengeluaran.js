@@ -40,70 +40,37 @@ const createPengeluaran = async (req, res) => {
     }
 };
 
-const getPengeluaranPerhari = async (req, res) => {
-    const user = req.user.id;
-    const tanggalHariIni = formatDate(today);
+const getPengeluaranByRange = async (req, res) => {
+    let start, end;
 
     try {
+        if (req.query.hari) {
+            const hari = new Date(req.query.hari);
+            start = new Date(hari.setHours(0, 0, 0, 0));
+            end = new Date(hari.setHours(23, 59, 59, 999));
+        } else if (req.query.minggu) {
+            const minggu = new Date(req.query.minggu);
+            start = new Date(minggu.setHours(0, 0, 0, 0));
+            end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            end.setHours(23, 59, 59, 999);
+        } else if (req.query.bulan && req.query.tahun) {
+            const bulan = parseInt(req.query.bulan) - 1;
+            const tahun = parseInt(req.query.tahun);
+            start = new Date(tahun, bulan, 1, 0, 0, 0);
+            end = new Date(tahun, bulan + 1, 0, 23, 59, 59);
+        } else if (req.query.tahun) {
+            const tahun = parseInt(req.query.tahun);
+            start = new Date(tahun, 0, 1, 0, 0, 0);
+            end = new Date(tahun, 11, 31, 23, 59, 59);
+        } else {
+            return res.status(400).json({ message: 'Parameter waktu tidak valid.' });
+        }
+
         const data = await Pengeluaran.findAll({
             where: {
                 createdAt: {
-                    [Op.gte]: new Date(tanggalHariIni + ' 00:00:00'),
-                    [Op.lte]: new Date(tanggalHariIni + ' 23:59:59')
-                }
-            }
-        });
-
-        const total = data.reduce((sum, item) => {
-            return sum + item.harga;
-        }, 0);
-
-        res.status(200).json({ tanggal: tanggalHariIni, total, data });
-    } catch (error) {
-        res.status(500).json({ message: 'Gagal mengambil pengeluaran per hari.', error });
-    }
-};
-
-const getPengeluaranPerMinggu = async (req, res) => {
-    const today = new Date();
-    const mingguAwal = new Date(today.setDate(today.getDate() - today.getDay())); // Minggu
-    const mingguAkhir = new Date();
-    mingguAkhir.setDate(mingguAwal.getDate() + 6); // Sabtu
-
-    try {
-        const data = await Pengeluaran.findAll({
-            where: {
-                createdAt: {
-                    [Op.between]: [mingguAwal, mingguAkhir]
-                }
-            }
-        });
-
-        const total = data.reduce((sum, item) => sum + item.harga, 0);
-
-        res.status(200).json({
-            minggu: `${formatDate(mingguAwal)} - ${formatDate(mingguAkhir)}`,
-            total,
-            data
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Gagal mengambil pengeluaran per minggu.', error });
-    }
-};
-
-const getPengeluaranPerBulan = async (req, res) => {
-    const today = new Date();
-    const bulan = today.getMonth(); // 0-11
-    const tahun = today.getFullYear();
-
-    const awalBulan = new Date(tahun, bulan, 1);
-    const akhirBulan = new Date(tahun, bulan + 1, 0, 23, 59, 59);
-
-    try {
-        const data = await Pengeluaran.findAll({
-            where: {
-                createdAt: {
-                    [Op.between]: [awalBulan, akhirBulan]
+                    [Op.between]: [start, end]
                 }
             }
         });
@@ -111,46 +78,16 @@ const getPengeluaranPerBulan = async (req, res) => {
         const total = data.reduce((sum, item) => sum + item.harga, 0);
 
         res.status(200).json({
-            bulan: `${tahun}-${(bulan + 1).toString().padStart(2, '0')}`,
+            range: { start, end },
             total,
             data
         });
     } catch (error) {
-        res.status(500).json({ message: 'Gagal mengambil pengeluaran per bulan.', error });
-    }
-};
-
-const getPengeluaranPerTahun = async (req, res) => {
-    const tahun = new Date().getFullYear();
-
-    const awalTahun = new Date(tahun, 0, 1);
-    const akhirTahun = new Date(tahun, 11, 31, 23, 59, 59);
-
-    try {
-        const data = await Pengeluaran.findAll({
-            where: {
-                createdAt: {
-                    [Op.between]: [awalTahun, akhirTahun]
-                }
-            }
-        });
-
-        const total = data.reduce((sum, item) => sum + item.harga, 0);
-
-        res.status(200).json({
-            tahun,
-            total,
-            data
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Gagal mengambil pengeluaran per tahun.', error });
+        res.status(500).json({ message: 'Gagal mengambil data pengeluaran.', error });
     }
 };
 
 module.exports = {
     createPengeluaran,
-    getPengeluaranPerhari,
-    getPengeluaranPerMinggu,
-    getPengeluaranPerBulan,
-    getPengeluaranPerTahun
+    getPengeluaranByRange
 };
